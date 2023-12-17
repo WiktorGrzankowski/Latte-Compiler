@@ -26,9 +26,12 @@ checkAll topDefs = do
             case funType fun of
                 VInt -> case argTypes fun of 
                     [] -> mapM_ checkTopDef topDefs
-                    args -> throwError $ CompilerError { text = "Function int main() is not defined.", position = Nothing }
-                _ -> throwError $ CompilerError { text = "Function int main() is not defined.", position = Nothing }
-        Nothing -> throwError $ CompilerError { text = "Function int main() is not defined.", position = Nothing }
+                    args -> throwError $ CompilerError { text = errorText, position = Nothing }
+                _ -> throwError $ CompilerError { text = errorText, position = Nothing }
+        Nothing -> throwError $ CompilerError { text = errorText, position = Nothing }
+
+    where
+        errorText = "Function int main() is not defined. No program entrypoint."
 
 preProdTopDefs :: TopDef -> TypeCheckerMonad ()
 preProdTopDefs (FnDef pos fType (Ident f) args block) = do
@@ -83,6 +86,9 @@ parseArgs :: [Arg] -> Env -> TypeCheckerMonad (Env, [VType], Set Var)
 parseArgs args e = go args (e, [], Set.empty) where
     go :: [Arg] -> (Env, [VType], Set Var) -> TypeCheckerMonad (Env, [VType], Set Var)
     go [] (env, ts, redef) = return (env, ts, redef)
+    go ((Ar pos (Void _) _):_) _ = throwError $ CompilerError { text = "Function arguments cannot be of type void.", position = pos }
+    go ((Ar pos (ArrT _ (Void _)) _):_) _ = throwError $ CompilerError { text = "Function arguments cannot be of type void[].", position = pos }
+    go ((Ar pos (ArrT _ (ArrT _ _)) _):_) _ = throwError $ CompilerError { text = "Function arguments cannot be multidimensional arrays.", position = pos }
     go ((Ar pos t (Ident x)):rest) (env, ts, redef) = 
         case Set.member x redef of
             False -> go rest ((Map.insert x (vTypeFromType t) env), (vTypeFromType t):ts, Set.insert x redef)

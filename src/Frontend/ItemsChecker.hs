@@ -15,6 +15,9 @@ import Latte.PrintLatte
 
 checkItems :: Type -> [Item] -> TypeCheckerMonad ()
 checkItems t [] = return ()
+checkItems (Void pos) _ = throwError $ CompilerError { text = "Variables cannot be of type void.", position = pos}
+checkItems (ArrT pos (Void _)) _ = throwError $ CompilerError { text = "Variables cannot be of type void[].", position = pos}
+checkItems (ArrT pos (ArrT _ _)) _ = throwError $ CompilerError { text = "Variables cannot be multidimensional arrays.", position = pos}
 checkItems t ((NoInit pos (Ident x)) : rest) = do
     memory <- get
     case Map.lookup x (varEnv memory) of

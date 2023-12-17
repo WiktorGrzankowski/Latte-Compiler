@@ -65,8 +65,12 @@ checkExp (ERel pos e1 op e2) = do
     t2 <- checkExp e2
     case getCommonType t1 t2 of
         Just VInt -> return VBool
-        Just vt -> if isEqOp op then return VBool else throwError $ CompilerError { text = "Type mismatch! Comparison is allowed only for integers.", position = pos} 
-        Nothing -> throwError $ CompilerError { text = "Type mismatch! Comparison is allowed only for integers.", position = pos} 
+        Just vt -> if isEqOp op 
+            then 
+                return VBool 
+            else 
+                throwError $ CompilerError { text = "Type mismatch! Comparison operations (>, >=, <, <=) are allowed only for integers.", position = pos} 
+        Nothing -> throwError $ CompilerError { text = "Type mismatch! Comparison is allowed only between values of the same type.", position = pos} 
 
     where
         isEqOp :: RelOp -> Bool
@@ -79,9 +83,11 @@ checkExp (EAdd pos e1 op e2) = do
     t1 <- checkExp e1
     t2 <- checkExp e2
     case getCommonType t1 t2 of
-        Just VStr -> return VStr
+        Just VStr -> case op of
+            (Plus _) -> return VStr
+            _ -> throwError $ CompilerError { text = "Type mismatch! Subtraction is allowed only for integers.", position = pos }
         Just VInt -> return VInt
-        Nothing -> throwError $ CompilerError { text = "Type mismatch! Adding is allowed only for integers and strings.", position = pos }  
+        Nothing -> throwError $ CompilerError { text = "Type mismatch! Addition is allowed only for integers and strings.", position = pos }  
 
 
 checkExp (EMul pos e1 op e2) = do

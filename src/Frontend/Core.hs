@@ -67,6 +67,7 @@ getCommonType (VClass x1) (VClass x2) = case x1 == x2 of
 -- treat nulls as if they can be any class
 getCommonType (VClass vt) VNull = Just $ VClass vt
 getCommonType VNull (VClass vt) = Just $ VClass vt
+getCommonType VVoid VVoid = Just VVoid
 getCommonType _ _ = Nothing
 
 
