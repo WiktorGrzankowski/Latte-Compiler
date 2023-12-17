@@ -90,9 +90,18 @@ parseArgs args e = go args (e, [], Set.empty) where
     go ((Ar pos (ArrT _ (Void _)) _):_) _ = throwError $ CompilerError { text = "Function arguments cannot be of type void[].", position = pos }
     go ((Ar pos (ArrT _ (ArrT _ _)) _):_) _ = throwError $ CompilerError { text = "Function arguments cannot be multidimensional arrays.", position = pos }
     go ((Ar pos t (Ident x)):rest) (env, ts, redef) = 
-        case Set.member x redef of
-            False -> go rest ((Map.insert x (vTypeFromType t) env), (vTypeFromType t):ts, Set.insert x redef)
-            True -> throwError $ CompilerError { text = "Argument " ++ (show x) ++ " is defined twice in a function definition.", position = pos }
+        case t of
+            (ClassT _ (Ident className)) -> do
+                memory <- get
+                case Map.lookup className (classEnv memory) of
+                    Nothing -> throwError $ CompilerError { text = "Class " ++ (show className) ++ " is not defined in this scope.", position = pos}
+                    _ -> finishGo
+            _ -> finishGo
+        where
+            finishGo = do
+                case Set.member x redef of
+                    False -> go rest ((Map.insert x (vTypeFromType t) env), (vTypeFromType t):ts, Set.insert x redef)
+                    True -> throwError $ CompilerError { text = "Argument " ++ (show x) ++ " is defined twice in a function definition.", position = pos }
 
 checkBlock :: Block -> Bool -> TypeCheckerMonad ()
 checkBlock (Blk _ stmts) funArgsRedefined = do

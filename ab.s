@@ -12,29 +12,15 @@ section .text
 main:
    push rbp
    mov rbp, rsp
-   sub rsp, 0
+   sub rsp, 8
+   mov rax, 7
+   mov [rbp - 8], rax
+   mov rax, [rbp - 0]
+   mov rdi, rax
+   call printInt
    mov rax, 0
    jmp end1
 end1:
-   mov rsp, rbp
-   pop rbp
-   ret
-f:
-   push rbp
-   mov rbp, rsp
-   sub rsp, 0
-   call g
-   add rsp, 0
-   jmp end2
-end2:
-   mov rsp, rbp
-   pop rbp
-   ret
-g:
-   push rbp
-   mov rbp, rsp
-   sub rsp, 0
-end3:
    mov rsp, rbp
    pop rbp
    ret

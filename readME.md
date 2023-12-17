@@ -15,6 +15,24 @@ Wykonanie `./latc_x86 foo/bar/baz.lat` spowoduje analizę syntaktyczną oraz typ
 Frontend wypisuje `OK`, jeśli statyczna analiza przebiegła pomyślnie, lub `ERROR` wraz ze stosowanym
 opisem błędu, w przeciwnym przyadku.
 
+# If/While bez klamerek
+Wyrażenie 
+`
+if (cond)
+    stmt;
+`
+traktowany jest jako lukier syntaktyczny dla wyrażenia
+`
+if (cond) {
+    stmt;
+}
+`
+stąd dopuszczalne jest wyrażenie
+`
+if (cond) 
+    int x;
+`
+
 # Null
 Działa bez rzutowania, można go porównać z każdą klasą.
 

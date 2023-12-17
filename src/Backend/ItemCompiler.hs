@@ -21,18 +21,20 @@ compAllItems _ [] = return $ fromString ""
 compAllItems (Str pos) ((NoInit _ (Ident x)) : rest) = do
     memory <- get
     let currentOffset = stackSize memory
-    modify (\st -> st {stackSize = currentOffset + 8, varEnv = Map.insert x (currentOffset, TStr) (varEnv memory)})
+    let newOffset = currentOffset + 8
+    modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, TStr) (varEnv memory)})
     let raxToDefault = fromString "   mov rax, s0\n"
-    let varToDefault = movToStackFromReg currentOffset "rax"
+    let varToDefault = movToStackFromReg newOffset "rax"
 
     restCode <- compAllItems (Str pos) rest
     return $ formatStrings [raxToDefault, varToDefault, restCode]
 compAllItems t ((NoInit pos (Ident x)) : rest) = do
     memory <- get
     let currentOffset = stackSize memory
-    modify (\st -> st {stackSize = currentOffset + 8, varEnv = Map.insert x (currentOffset, tTypeFromType t) (varEnv memory)})
+    let newOffset = currentOffset + 8
+    modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, tTypeFromType t) (varEnv memory)})
     let raxToDefault = movToRegLiteralInt "rax" 0
-    let varToDefault = movToStackFromReg currentOffset "rax"
+    let varToDefault = movToStackFromReg newOffset "rax"
 
     restCode <- compAllItems t rest
     return $ formatStrings [raxToDefault, varToDefault, restCode]
@@ -41,7 +43,8 @@ compAllItems t ((Init _ (Ident x) e) : rest) = do
     (eCode, _) <- compExp e "rax"
     memory <- get
     let currentOffset = stackSize memory
-    modify (\st -> st {stackSize = currentOffset + 8, varEnv = Map.insert x (currentOffset, tTypeFromType t) (varEnv memory)})
-    let varToRax = movToStackFromReg currentOffset "rax"
+    let newOffset = currentOffset + 8
+    modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, tTypeFromType t) (varEnv memory)})
+    let varToRax = movToStackFromReg newOffset "rax"
     restCode <- compAllItems t rest
     return $ formatStrings [eCode, varToRax, restCode]
