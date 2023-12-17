@@ -1,0 +1,6 @@
+int main() {
+    string s, s2 = "pierd";
+    printString(s);
+    printString(s2);
+    return 0;
+}
