@@ -12,12 +12,9 @@ section .text
 main:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
-   mov rax, 7
+   sub rsp, 16
+   call readInt
    mov [rbp - 8], rax
-   mov rax, [rbp - 0]
-   mov rdi, rax
-   call printInt
    mov rax, 0
    jmp end1
 end1:

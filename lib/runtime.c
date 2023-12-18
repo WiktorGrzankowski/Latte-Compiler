@@ -14,6 +14,8 @@ void printString(const char* s) {
 long long readInt() {
     long long i;
     scanf("%lld", &i);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
     return i;
 }
 

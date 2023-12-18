@@ -1,6 +1,7 @@
-int main() {
- int x = 7;
- printInt(x);
- return 0 ;
+/* test input */
 
+int main() {
+  int x = readInt();
+ 
+  return 0 ;
 }

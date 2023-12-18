@@ -28,7 +28,7 @@ end1:
 f:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, s2
    mov [rbp - 8], rax

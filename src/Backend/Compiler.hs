@@ -1,6 +1,5 @@
 module Backend.Compiler where
 
--- import Core
 import System.IO
 import Control.Monad.Except
 import Control.Monad.State
@@ -84,8 +83,9 @@ compTopDef (FnDef pos fType (Ident f) args block) = do
     -- let removeFromStack = emptyStack stackAtEndOfFunction
     let removeFromStack = fromString "   mov rsp, rbp\n"
     modify (\st -> st { funArgs = funArgsBefore, varEnv = varEnvBefore})
-    
-    return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize)), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
+    let stackPadding = (funVarsSize + (toInteger argsSize)) `mod` 16
+
+    return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize) + stackPadding), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
 
 
 regArgsToStack :: Integer -> Integer -> [Arg] -> CM (Builder, Int)

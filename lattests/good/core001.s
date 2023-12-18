@@ -15,7 +15,7 @@ section .text
 main:
    push rbp
    mov rbp, rsp
-   sub rsp, 24
+   sub rsp, 32
    mov rax, 10
    mov rdi, rax
    call fac
@@ -96,7 +96,7 @@ end1:
 fac:
    push rbp
    mov rbp, rsp
-   sub rsp, 24
+   sub rsp, 32
    mov [rbp - 8], rdi
    mov rax, 0
    mov [rbp - 16], rax
@@ -143,7 +143,7 @@ end2:
 rfac:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    mov rdx, rax
@@ -183,7 +183,7 @@ end3:
 mfac:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    mov rdx, rax
@@ -223,7 +223,7 @@ end4:
 nfac:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    mov rdx, rax
@@ -263,7 +263,7 @@ end5:
 ifac:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, 1
    mov rdi, rax
@@ -279,7 +279,7 @@ end6:
 ifac2f:
    push rbp
    mov rbp, rsp
-   sub rsp, 24
+   sub rsp, 32
    mov [rbp - 8], rdi
    mov [rbp - 16], rsi
    mov rax, [rbp - 8]

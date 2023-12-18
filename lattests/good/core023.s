@@ -80,7 +80,7 @@ end1:
 foo:
    push rbp
    mov rbp, rsp
-   sub rsp, 56
+   sub rsp, 64
    mov [rbp - 8], rdi
    mov [rbp - 16], rsi
    mov [rbp - 24], rdx

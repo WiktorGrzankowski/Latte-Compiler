@@ -138,7 +138,7 @@ end1:
 printBool:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    cmp al, 1

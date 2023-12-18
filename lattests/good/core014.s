@@ -12,7 +12,7 @@ section .text
 main:
    push rbp
    mov rbp, rsp
-   sub rsp, 24
+   sub rsp, 32
    mov rax, 0
    mov [rbp - 8], rax
    mov rax, 0

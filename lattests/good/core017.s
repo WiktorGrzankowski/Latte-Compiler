@@ -15,7 +15,7 @@ section .text
 main:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov rax, 4
    mov [rbp - 8], rax
    mov rax, 3
@@ -192,7 +192,7 @@ end1:
 dontCallMe:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    mov rdi, rax
@@ -206,7 +206,7 @@ end2:
 printBool:
    push rbp
    mov rbp, rsp
-   sub rsp, 8
+   sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    cmp al, 1
