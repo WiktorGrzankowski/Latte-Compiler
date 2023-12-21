@@ -46,6 +46,7 @@ textSectionHeader = formatStrings [
     fromString "   extern concat\n",
     fromString "   extern readInt\n",
     fromString "   extern error\n",
+    fromString "   extern allocateArray\n",
     fromString "   global main\n"
     ]
 
@@ -165,6 +166,22 @@ compStmt (Ass _ (EVar _ (Ident x)) e) = do
         Just (offset, _) -> do
             let move = movToStackFromReg offset "rax"
             return $ formatStrings [code, move]
+
+compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
+    (codeIdent, _) <- compExp eIdent "rax"
+    let saveRax = pushReg "rax"
+    (codeInd, _) <- compExp eInd "rax"
+    let movIndToRdi = movToRegFromReg "rdi" "rax"
+    let saveRdi = pushReg "rdi"
+    (codeVal, _) <- compExp eVal "rax"
+    let movValToRsi = movToRegFromReg "rsi" "rax"
+    let retrieveRdi = popReg "rdi"
+    let retrieveRax = popReg "rax"
+    -- something like
+    -- mov [ident + 8  * Ind], val
+    let movValToArr = fromString $ "   mov [rax + " ++ "rdi * 8], rsi\n"
+    return $ formatStrings [codeIdent, saveRax, codeInd, movIndToRdi, saveRax, codeVal, movValToRsi, retrieveRdi, retrieveRax, movValToArr]
+
 
 compStmt (Incr _ (EVar _ (Ident x))) = do
     let incr = fromString "   inc rax\n"

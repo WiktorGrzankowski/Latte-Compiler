@@ -17,7 +17,7 @@ type Loc = Int
 type Var = String
 data CompilerError = CompilerError { text :: String, position :: Pos }
 data TType = TInt | TStr | TBool | TVoid | TArr TType | TClass Var | TNull
-data VType = VInt Integer | VStr String | VBool Bool
+data VType = VInt Integer | VStr String | VBool Bool | VArr VType
 data FunT = FunT { funType :: VType, argTypes :: [VType] }
 type Env = Map Var (Integer, TType)
 type EnvFun = Map Var [(String, Type)]
@@ -91,6 +91,7 @@ tTypeFromType (Void _) = TVoid
 tTypeFromType (Int _) = TInt
 tTypeFromType (Str _) = TStr
 tTypeFromType (Bool _) = TBool
+tTypeFromType (ArrT _ t) = TArr $ tTypeFromType t
 
 allocateStack :: Integer -> Builder
 allocateStack i = fromString $ "   sub rsp, " ++ (show i) ++ "\n"

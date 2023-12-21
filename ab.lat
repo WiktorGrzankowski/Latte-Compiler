@@ -1,7 +1,8 @@
 /* test input */
 
 int main() {
-  int x = readInt();
- 
+  string[] s = new string[15];
+  s[0] = "jebac pchw";
+  printString(s[0]);
   return 0 ;
 }

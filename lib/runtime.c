@@ -27,7 +27,7 @@ char* readString() {
     bytesRead = getline(&buffer, &bufferSize, stdin);
 
     if (bytesRead == -1) {
-        perror("Błąd podczas wczytywania napisu.");
+        perror("Error in reading input string.");
         exit(1);
     }
 
@@ -45,6 +45,17 @@ char* concat(const char* s1, const char* s2) {
     strcpy(res, s1);
     strcpy(res + len1, s2);
     return res;
+}
+
+void* allocateArray(size_t numElements, size_t elementSize) {
+    void* ptr = calloc(numElements, elementSize);
+
+    if (ptr == NULL) {
+        perror("Memory allocation failed.");
+        exit(1);
+    }
+
+    return ptr;
 }
 
 void error() {

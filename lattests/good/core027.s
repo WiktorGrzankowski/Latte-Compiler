@@ -10,6 +10,7 @@ section .text
    extern concat
    extern readInt
    extern error
+   extern allocateArray
    global main
 main:
    push rbp

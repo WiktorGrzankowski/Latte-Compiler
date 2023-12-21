@@ -8,6 +8,7 @@ section .text
    extern concat
    extern readInt
    extern error
+   extern allocateArray
    global main
 funkcja_ifbooltrudny:
    push rbp
