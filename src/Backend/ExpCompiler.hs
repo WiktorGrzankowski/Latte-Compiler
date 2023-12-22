@@ -105,37 +105,55 @@ compExp (EApp pos (Ident f) exprs) reg = do
 
 compExp (EArr _ t e) reg = do
     let arrayType = tTypeFromType t
+    let pushR12 = pushReg "r12"
     (code, vt) <- compExp e "rax" -- array size
     let movSizeToRdi = fromString "   mov rdi, rax\n"
     let movTypeSizeToRsi = fromString "   mov rsi, 8\n"
+    let saveSizeToR12 = movToRegFromReg "r12" "rdi"
+    let accountForLengthAttr = fromString "   add rdi, 1\n" -- first we store 8 bytes for length
     let allocateSpace = fromString "   call allocateArray\n"
+    let setFirstPlaceToLen = fromString "   mov [rax], r12\n"
+    let popR12 = popReg "r12"
 
     case arrayType of
-        TInt -> return (formatStrings [code, movSizeToRdi, movTypeSizeToRsi, allocateSpace], (TArr arrayType))
+        TInt -> do
+            let baseCode = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen, popR12]
+            -- let baseCode = formatStrings [pushR12, code, movSizeToRdi, accountForLengthAttr, saveSizeToR12, movTypeSizeToRsi, allocateSpace, setFirstPlaceToLen, popR12]
+            -- rax -> address of beginning of array
+            -- rax + 8 -> len
+
+            return (baseCode, (TArr arrayType))
         TStr -> do
-            let pushR12 = pushReg "r12"
-            let popR12 = popReg "r12"
             let pushRax = pushReg "rax"
             let popRax = popReg "rax"
             let saveSizeToR12 = movToRegFromReg "r12" "rdi"
             let movSizeBackToRcx = movToRegFromReg "rcx" "r12"
-            -- set all walues in "rax + 8 * (up to size)" to be s0
+            -- set all values in "rax + 8 * (up to size)" to be s0
             let loopLabel = "init_loop"
             let loopEndLabel = "end_loop"
             let checkIfEmptyArr = fromString "   test rcx, rcx\n   jz end_loop\n"
-            let movSizeBackToRdi = movToRegFromReg "rdi" "r12"
             let loopLabelStart = fromString $ loopLabel ++ ":\n"
             let loopEndLabelCode = fromString $ loopEndLabel ++ ":\n"
-            let insideLoop = formatStrings [fromString "   mov qword [rax], s0\n", fromString "   add rax, 8\n", fromString "   loop init_loop\n"]
+            let insideLoop = formatStrings [fromString "   mov qword [rax + 8], s0\n", fromString "   add rax, 8\n", fromString "   loop init_loop\n"]
 
-            let initAllocation = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, allocateSpace]
-            let initLoop = formatStrings [pushRax, movSizeBackToRcx, checkIfEmptyArr,loopLabelStart, insideLoop, loopEndLabelCode, popRax]
-            return (formatStrings [initAllocation, initLoop, popR12], (TArr arrayType))
+            let initAllocation = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen]
+            let initLoop = formatStrings [pushRax, movSizeBackToRcx, checkIfEmptyArr,loopLabelStart, insideLoop, loopEndLabelCode, popRax, popR12]
+            return (formatStrings [initAllocation, initLoop], (TArr arrayType))
 
     -- now the pointer is in "rax"
     -- add mapping var_name -> allocated_addr
 
     -- return (formatStrings [code, movSizeToRdi, movTypeSizeToRsi, allocateSpace], (TArr arrayType))
+
+-- todo - nie dziala jeszze!!
+compExp (EAttr pos e (Ident field)) reg = do
+    (codeExp, eType) <- compExp e reg
+    case field of
+        "length" -> do
+            case eType of
+                TArr _ -> return (formatStrings [codeExp, fromString "   mov rax, [rax]\n"], TInt)
+
+            
 
 compExp (EVarArr pos e eInd) reg = do
     (codeInd, _) <- compExp eInd "rax"
@@ -145,7 +163,7 @@ compExp (EVarArr pos e eInd) reg = do
     let retrieveRax = popReg "rax"
     -- now under rdi is the index where we want to look at (times 8)
     -- we want result to be [rax + 8 * rdi]
-    let getFromArr = fromString "   mov rax, [rdi + 8 * rax]\n"
+    let getFromArr = fromString "   mov rax, [rdi + 8 + 8 * rax]\n"
     return (formatStrings [codeInd, saveRax, codeVar, moveVarToRdi, retrieveRax, getFromArr], vt)
 
 compExp (EAdd _ e1 (Plus _) e2) reg = do

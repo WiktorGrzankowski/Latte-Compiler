@@ -24,6 +24,13 @@ type EnvFun = Map Var [(String, Type)]
 type EnvFunTypes = Map Var TType
 type EnvClass = Map Var Env
 
+instance Show TType where
+    show TInt = "int"
+    show TStr = "string"
+    show TVoid = "void"
+    show TBool = "bool"
+    show (TArr vt) = "array [" ++ (show vt) ++ "]"
+
 data StmtState = StmtState { varEnv :: Env, 
                          funEnv :: EnvFun, 
                          funEnvTypes :: EnvFunTypes,

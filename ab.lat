@@ -1,8 +1,14 @@
 /* test input */
 
 int main() {
-  string[] s = new string[15];
-  s[0] = "jebac pchw";
-  printString(s[0]);
+  string[] a = new string[12];
+  a[0] = "pchw";
+  printString(a[11]);
+  printInt(a.length);
+  int[] b = new int[12];
+  b[2] = 912312;
+  printInt(b[11]);
+  printInt(b.  length);
+
   return 0 ;
 }

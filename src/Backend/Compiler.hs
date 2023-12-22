@@ -179,7 +179,7 @@ compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
     let retrieveRax = popReg "rax"
     -- something like
     -- mov [ident + 8  * Ind], val
-    let movValToArr = fromString $ "   mov [rax + " ++ "rdi * 8], rsi\n"
+    let movValToArr = fromString $ "   mov [rax + 8 + " ++ "rdi * 8], rsi\n"
     return $ formatStrings [codeIdent, saveRax, codeInd, movIndToRdi, saveRax, codeVal, movValToRsi, retrieveRdi, retrieveRax, movValToArr]
 
 

@@ -144,7 +144,7 @@ checkArrSize :: Pos -> Expr -> TypeCheckerMonad VType
 checkArrSize pos e = do
     eType <- checkExp e 
     case eType of
-        VArr vt -> return vt
+        VArr _ -> return VInt
         other -> throwError $ CompilerError { text = "Type mismatch! Expected array but got " ++ (show other) ++ ".", position = pos}
 
 checkClassElem :: Pos -> Expr -> Var -> TypeCheckerMonad VType
