@@ -53,7 +53,7 @@ transStmt x = case x of
   Latte.AbsLatte.Cond _ expr stmt -> failure x
   Latte.AbsLatte.CondElse _ expr stmt1 stmt2 -> failure x
   Latte.AbsLatte.While _ expr stmt -> failure x
-  Latte.AbsLatte.ForEach _ type_ ident1 ident2 stmt -> failure x
+  Latte.AbsLatte.ForEach _ type_ ident expr stmt -> failure x
   Latte.AbsLatte.SExp _ expr -> failure x
   Latte.AbsLatte.SPrintInt _ expr -> failure x
   Latte.AbsLatte.SPrintStr _ expr -> failure x

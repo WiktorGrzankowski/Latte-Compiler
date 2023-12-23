@@ -12,7 +12,7 @@ import Latte.PrintLatte
 import Latte.ParLatte
 import Data.Text.Lazy.Builder
 import Backend.ExpCompiler (compExp)
-import Backend.ItemCompiler (compAllItems)
+import Backend.ItemCompiler (compAllItems, compItemForEachCase)
 import Backend.Core
 
 emptyState :: StmtState
@@ -248,6 +248,47 @@ compStmt (While _ cond stmt) = do
     let labelCondCode = fromString $ condLabel ++ ":\n"
     let jmpLabelCond = fromString $ "   jmp " ++ condLabel ++ "\n"
     return $ formatStrings [labelCondCode, condCode, checkAl, jumpIfNotEq, stmtCode, jmpLabelCond, labelCode]
+
+compStmt (ForEach pos t (Ident x) e stmt) = do
+    -- now loop over elements and each time apply stmt with x mapped to [rax]
+    -- compAllItems t ((NoInit pos (Ident x)) : rest) 
+    (eCode, _) <- compExp e "rax"
+    memory <- get
+    redefineX <- compItemForEachCase t (NoInit pos (Ident x))
+    let movLenToR12 = fromString "   mov r12, [rax]\n"
+    let movRaxToFirstElem = fromString "   add rax, 8\n"
+    let movArrToR11 = movToRegFromReg "r13" "rax"
+
+    let labelNr = labelId memory
+    modify (\st -> st {labelId = labelNr + 1})
+    let labelName = "forEach" ++ (show (labelNr + 1))
+    let labelCode = fromString $ labelName ++ ":\n"
+    let labelEndName = labelName ++ "end"
+    let labelEndCode = fromString $ labelEndName ++ ":\n"
+    let checkIfEmptyArr = fromString "   test r12, r12\n"
+    let gotoEndIfEmptyArr = fromString $ "   jz " ++ labelEndName ++ "\n"
+    let loopAgain = fromString $ "   add r13, 8\n   dec r12\n   jnz " ++ labelName ++ "\n"
+
+    let spaceForIterator = fromString "   sub rsp, 8\n"
+    let deletSpaceForIterator = fromString "   add rsp, 8\n"
+
+    stmtCode <- compStmt stmt
+
+
+
+    modify (\st -> st {stackSize = stackSize memory, varEnv = varEnv memory})
+
+    return $ formatStrings[eCode, movLenToR12, movRaxToFirstElem, movArrToR11, spaceForIterator, checkIfEmptyArr, gotoEndIfEmptyArr, labelCode, redefineX, stmtCode, loopAgain, labelEndCode, deletSpaceForIterator ]
+    -- where
+    --     compItemForEachCase t e = do
+    --         code <- compAllItems t e
+    --         let getActualValue = fromString "   mov rax, [rax]\n"
+    --         offset <- gets stackSize
+    --         let updateVarValue = movToStackFromReg offset "rax"
+    --         return $ formatStrings [code, getActualValue, updateVarValue]
+
+
+
 
 getExpLocation :: Expr -> CM Builder
 getExpLocation (ELitInt _ i) = return $ fromString $ show i ++ "\n"

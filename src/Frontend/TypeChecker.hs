@@ -201,24 +201,42 @@ checkStmt (While pos cond stmt) = do
             modify (\st -> st {retSet = retSetBefore})
         _ -> throwError $ CompilerError { text = "Logical condition must be a boolean expression.", position = pos }
 
-checkStmt (ForEach pos t (Ident x) (Ident a) stmt) = do
+
+checkStmt (ForEach pos t (Ident x) e stmt) = do
+    eType <- checkExp e
     memory <- get
     let itType = vTypeFromType t
-    case Map.lookup a (varEnv memory) of
-        Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos }
-        Just (VArr vt) -> do
-            case areSameType vt itType of
-                False -> throwError $ CompilerError { text = "Could not match type " ++ (show itType) ++ " with expected " ++ (show vt) ++ ".", position = pos }
-                True -> do
-                    -- redefine the variable x for the scope of the next statement and say, that it has already been redefined
-                    modify (\st -> st { varEnv = Map.insert x itType (varEnv memory), funEnv = funEnv memory, returnType = returnType memory, redefinedVars = Set.singleton x, retSet = retSet memory })
-                    branchBlock stmt pos
-                    --checkBlock b True
-                    -- mark variable as no longer redefined
-                    put (memory)
-                    return ()
-
+    case eType of
+        (VArr vt) -> case areSameType vt itType of
+            True -> do
+                -- redefine the variable x for the scope of the next statement and say, that it has already been redefined
+                modify (\st -> st { varEnv = Map.insert x itType (varEnv memory), funEnv = funEnv memory, returnType = returnType memory, redefinedVars = Set.singleton x, retSet = retSet memory })
+                branchBlock stmt pos
+                --checkBlock b True
+                -- mark variable as no longer redefined
+                put (memory)
+                return ()
+            False -> throwError $ CompilerError { text = "Could not match type " ++ (show itType) ++ " with expected " ++ (show vt) ++ ".", position = pos }
         _ -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not an array", position = pos}
+
+-- checkStmt (ForEach pos t (Ident x) (Ident a) stmt) = do
+--     memory <- get
+--     let itType = vTypeFromType t
+--     case Map.lookup a (varEnv memory) of
+--         Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos }
+--         Just (VArr vt) -> do
+--             case areSameType vt itType of
+--                 False -> throwError $ CompilerError { text = "Could not match type " ++ (show itType) ++ " with expected " ++ (show vt) ++ ".", position = pos }
+--                 True -> do
+--                     -- redefine the variable x for the scope of the next statement and say, that it has already been redefined
+--                     modify (\st -> st { varEnv = Map.insert x itType (varEnv memory), funEnv = funEnv memory, returnType = returnType memory, redefinedVars = Set.singleton x, retSet = retSet memory })
+--                     branchBlock stmt pos
+--                     --checkBlock b True
+--                     -- mark variable as no longer redefined
+--                     put (memory)
+--                     return ()
+
+--         _ -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not an array", position = pos}
 
 checkStmt (BStmt _ b) = checkBlock b False
 

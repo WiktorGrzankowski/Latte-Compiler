@@ -38,18 +38,6 @@ compAllItems t ((NoInit pos (Ident x)) : rest) = do
 
     restCode <- compAllItems t rest
     return $ formatStrings [raxToDefault, varToDefault, restCode]
-
--- compAllItems (ArrT _ t) ((Init _ (Ident x) e) : rest)  = do
---     (eCode, _) <- compExp e "rax"
---     memory <- get
---     let currentOffset = stackSize memory
---     let newOffset = currentOffset + 8
---     let newOffsetWithSize = newOffset + 8
---     modify (\st -> st {stackSize = newOffsetWithSize, varEnv = Map.insert x (newOffset, TArr (tTypeFromType t)) (varEnv memory)})
---     let varToRax = movToStackFromReg newOffset "rax"
---     let sizeToStack = movToStackFromReg newOffsetWithSize "rdi"
---     restCode <- compAllItems t rest
---     return $ formatStrings [eCode, varToRax, sizeToStack, restCode]
     
 compAllItems t ((Init _ (Ident x) e) : rest) = do
     (eCode, _) <- compExp e "rax"
@@ -60,3 +48,15 @@ compAllItems t ((Init _ (Ident x) e) : rest) = do
     let varToRax = movToStackFromReg newOffset "rax"
     restCode <- compAllItems t rest
     return $ formatStrings [eCode, varToRax, restCode]
+
+compItemForEachCase :: Type -> Item -> CM Builder
+compItemForEachCase t (NoInit pos (Ident x)) = do
+    memory <- get
+    let currentOffset = stackSize memory
+    let newOffset = currentOffset + 8 
+    modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, tTypeFromType t) (varEnv memory)})
+    let getValueOfR13 = fromString "   mov r14, [r13]\n"
+    let varToRax = movToStackFromReg newOffset "r14"
+
+    return $ formatStrings[getValueOfR13, varToRax]
+    

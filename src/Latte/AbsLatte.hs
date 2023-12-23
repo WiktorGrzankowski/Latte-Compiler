@@ -53,7 +53,7 @@ data Stmt' a
     | Cond a (Expr' a) (Stmt' a)
     | CondElse a (Expr' a) (Stmt' a) (Stmt' a)
     | While a (Expr' a) (Stmt' a)
-    | ForEach a (Type' a) Ident Ident (Stmt' a)
+    | ForEach a (Type' a) Ident (Expr' a) (Stmt' a)
     | SExp a (Expr' a)
     | SPrintInt a (Expr' a)
     | SPrintStr a (Expr' a)

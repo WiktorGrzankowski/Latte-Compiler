@@ -80,7 +80,7 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` ``(`` //Expr// ``)`` //Stmt//
   |  |  **|**  | ``if`` ``(`` //Expr// ``)`` //Stmt// ``else`` //Stmt//
   |  |  **|**  | ``while`` ``(`` //Expr// ``)`` //Stmt//
-  |  |  **|**  | ``for`` ``(`` //Type// //Ident// ``:`` //Ident// ``)`` //Stmt//
+  |  |  **|**  | ``for`` ``(`` //Type// //Ident// ``:`` //Expr6// ``)`` //Stmt//
   |  |  **|**  | //Expr// ``;``
   |  |  **|**  | ``printInt`` ``(`` //Expr// ``)`` ``;``
   |  |  **|**  | ``printString`` ``(`` //Expr// ``)`` ``;``

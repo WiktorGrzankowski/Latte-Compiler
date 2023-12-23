@@ -140,7 +140,7 @@ Stmt
   | 'if' '(' Expr ')' Stmt { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.Cond (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
   | 'if' '(' Expr ')' Stmt 'else' Stmt { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.CondElse (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5) (snd $7)) }
   | 'while' '(' Expr ')' Stmt { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.While (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $5)) }
-  | 'for' '(' Type Ident ':' Ident ')' Stmt { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.ForEach (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $4) (snd $6) (snd $8)) }
+  | 'for' '(' Type Ident ':' Expr6 ')' Stmt { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.ForEach (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3) (snd $4) (snd $6) (snd $8)) }
   | Expr ';' { (fst $1, Latte.AbsLatte.SExp (fst $1) (snd $1)) }
   | 'printInt' '(' Expr ')' ';' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.SPrintInt (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3)) }
   | 'printString' '(' Expr ')' ';' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.SPrintStr (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $3)) }
