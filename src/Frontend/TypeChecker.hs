@@ -15,7 +15,16 @@ import Latte.PrintLatte
 import Latte.ParLatte
 
 emptyState :: StmtCheck
-emptyState = StmtCheck { varEnv = Map.empty, funEnv = Map.empty, classEnv = Map.empty, returnType = VVoid, redefinedVars = Set.empty, retSet = False }
+emptyState = StmtCheck { 
+                        varEnv = Map.empty,
+                        funEnv = Map.empty, 
+                        classEnv = Map.empty, 
+                        classFunEnv = Map.empty,
+                        returnType = VVoid, 
+                        redefinedVars = Set.empty, 
+                        retSet = False ,
+                        currClass = "(null)"
+                        }
 
 checkAll :: [TopDef] -> TypeCheckerMonad ()
 checkAll topDefs = do
@@ -45,20 +54,29 @@ preProdTopDefs (FnDef pos fType (Ident f) args block) = do
         Just _ -> throwError $ CompilerError { text = "Function " ++ (show f) ++ " is already defined.", position = Nothing }
 
 preProdTopDefs (ClassDef pos (Ident x) attrs) = do
-    localEnv <- parseAttrs attrs
+    (localEnv, localMethods) <- parseAttrs attrs
     memory <- get
     case Map.lookup x (classEnv memory) of
-        Nothing -> modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st) })
+        Nothing -> modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
         Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
 
-parseAttrs :: [ClassAttr] -> TypeCheckerMonad Env
-parseAttrs attrs = go attrs Map.empty where
-    go :: [ClassAttr] -> Env -> TypeCheckerMonad Env
-    go [] m = return m
-    go ((ClassField pos t (Ident x)):rest) m =
-        case Map.lookup x m of
-            Nothing -> go rest (Map.insert x (vTypeFromType t) m)
+parseAttrs :: [ClassAttr] -> TypeCheckerMonad (Env, EnvFun)
+parseAttrs attrs = go attrs Map.empty Map.empty where
+    go :: [ClassAttr] -> Env -> EnvFun -> TypeCheckerMonad (Env, EnvFun)
+    go [] mVars mMethods = return (mVars, mMethods)
+    go ((ClassField pos t (Ident x)):rest) mVars mMethods =
+        case Map.lookup x mVars of
+            Nothing -> go rest (Map.insert x (vTypeFromType t) mVars) mMethods
             _ ->  throwError $ CompilerError { text = "Class field " ++ (show x) ++ " defined multiple times.", position = pos }
+    go ((ClassMethod pos fType (Ident f) args block):rest) mVars mMethods = 
+        case Map.lookup f mMethods of
+            Nothing -> do
+                memory <- get
+                (_, funArgTypes, _) <- parseArgs args (varEnv memory)
+                let funInfo = FunT { funType = vTypeFromType fType, argTypes = funArgTypes}
+                go rest mVars (Map.insert f funInfo mMethods)
+            _ -> throwError $ CompilerError { text = "Class method " ++ (show f) ++ " defined multiple times.", position = pos }
+
 
 checkTopDef :: TopDef -> TypeCheckerMonad ()
 checkTopDef (FnDef pos fType (Ident f) args block) = do
@@ -79,7 +97,42 @@ checkTopDef (FnDef pos fType (Ident f) args block) = do
         True -> modify (\st -> st { varEnv = vars, funEnv = newFunEnv, returnType = returnType memory, redefinedVars = redefVars, retSet = False })
 
 -- nothing more required after preprocessing
-checkTopDef (ClassDef pos (Ident x) attrs) = return ()
+-- checkTopDef (ClassDef pos (Ident x) attrs) = return ()
+checkTopDef (ClassDef pos (Ident className) attrs) = do
+    modify (\st -> st {currClass = className})
+    checkClassHelper (ClassDef pos (Ident className) attrs)
+    modify (\st -> st {currClass = "(null)"})
+
+    where
+        checkClassHelper (ClassDef pos (Ident className) []) = return ()
+        checkClassHelper (ClassDef pos (Ident className) ((ClassField _ t (Ident x)):rest)) = checkTopDef (ClassDef pos (Ident className) rest)
+        checkClassHelper (ClassDef pos (Ident className) ((ClassMethod _ fType (Ident f) args block):rest)) = do
+            -- go all over method bodies and check if they are set correctly
+            -- bodies should know all functions, attribute variables and method arguments
+            memory <- get
+            let vars = varEnv memory
+            let classAttributes = Map.findWithDefault Map.empty className (classEnv memory)
+            (varsInFun, funArgTypes, redefArgs) <- parseArgs args classAttributes -- no variables are available
+            let newFun = FunT { funType = vTypeFromType fType, argTypes = funArgTypes }
+
+            let classMethods = Map.findWithDefault Map.empty className (classFunEnv memory)
+            -- add newFun to methodEnv
+            let updatedClassMethods = Map.insert f newFun classMethods
+
+            let updatedClassFunEnv = Map.insert className updatedClassMethods (classFunEnv memory)
+
+            let redefVars = redefinedVars memory
+            modify (\st -> st {varEnv = varsInFun, returnType = vTypeFromType fType, classFunEnv = updatedClassFunEnv, redefinedVars = redefArgs, retSet = False})
+            checkBlock block True
+            isRetSet <- gets retSet
+            case isRetSet of
+                False -> case (vTypeFromType fType) of
+                    VVoid -> modify (\st -> st { varEnv = vars, returnType = returnType memory, classFunEnv = updatedClassFunEnv, redefinedVars = redefVars, retSet = False})
+                    _ -> throwError $ CompilerError { text = "Method " ++ (show f) ++ " does not end with a return statement.", position = pos }
+                True -> modify (\st -> st { varEnv = vars, returnType = returnType memory, classFunEnv = updatedClassFunEnv, redefinedVars = redefVars, retSet = False})
+
+            checkTopDef (ClassDef pos (Ident className) rest)
+
     
 
 parseArgs :: [Arg] -> Env -> TypeCheckerMonad (Env, [VType], Set Var) 
@@ -218,25 +271,6 @@ checkStmt (ForEach pos t (Ident x) e stmt) = do
                 return ()
             False -> throwError $ CompilerError { text = "Could not match type " ++ (show itType) ++ " with expected " ++ (show vt) ++ ".", position = pos }
         _ -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not an array", position = pos}
-
--- checkStmt (ForEach pos t (Ident x) (Ident a) stmt) = do
---     memory <- get
---     let itType = vTypeFromType t
---     case Map.lookup a (varEnv memory) of
---         Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos }
---         Just (VArr vt) -> do
---             case areSameType vt itType of
---                 False -> throwError $ CompilerError { text = "Could not match type " ++ (show itType) ++ " with expected " ++ (show vt) ++ ".", position = pos }
---                 True -> do
---                     -- redefine the variable x for the scope of the next statement and say, that it has already been redefined
---                     modify (\st -> st { varEnv = Map.insert x itType (varEnv memory), funEnv = funEnv memory, returnType = returnType memory, redefinedVars = Set.singleton x, retSet = retSet memory })
---                     branchBlock stmt pos
---                     --checkBlock b True
---                     -- mark variable as no longer redefined
---                     put (memory)
---                     return ()
-
---         _ -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not an array", position = pos}
 
 checkStmt (BStmt _ b) = checkBlock b False
 

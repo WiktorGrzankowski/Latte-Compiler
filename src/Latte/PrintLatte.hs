@@ -148,10 +148,12 @@ instance Print (Latte.AbsLatte.TopDef' a) where
   prt i = \case
     Latte.AbsLatte.FnDef _ type_ id_ args block -> prPrec i 0 (concatD [prt 0 type_, prt 0 id_, doc (showString "("), prt 0 args, doc (showString ")"), prt 0 block])
     Latte.AbsLatte.ClassDef _ id_ classattrs -> prPrec i 0 (concatD [doc (showString "class"), prt 0 id_, doc (showString "{"), prt 0 classattrs, doc (showString "}")])
+    Latte.AbsLatte.ClassDefE _ id_1 id_2 classattrs -> prPrec i 0 (concatD [doc (showString "class"), prt 0 id_1, doc (showString "extends"), prt 0 id_2, doc (showString "{"), prt 0 classattrs, doc (showString "}")])
 
 instance Print (Latte.AbsLatte.ClassAttr' a) where
   prt i = \case
     Latte.AbsLatte.ClassField _ type_ id_ -> prPrec i 0 (concatD [prt 0 type_, prt 0 id_, doc (showString ";")])
+    Latte.AbsLatte.ClassMethod _ type_ id_ args block -> prPrec i 0 (concatD [prt 0 type_, prt 0 id_, doc (showString "("), prt 0 args, doc (showString ")"), prt 0 block])
 
 instance Print [Latte.AbsLatte.ClassAttr' a] where
   prt _ [] = concatD []
@@ -233,10 +235,12 @@ instance Print (Latte.AbsLatte.Expr' a) where
     Latte.AbsLatte.ELitFalse _ -> prPrec i 6 (concatD [doc (showString "false")])
     Latte.AbsLatte.EApp _ id_ exprs -> prPrec i 6 (concatD [prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")")])
     Latte.AbsLatte.EString _ str -> prPrec i 6 (concatD [printString str])
+    Latte.AbsLatte.ESelf _ -> prPrec i 6 (concatD [doc (showString "self")])
     Latte.AbsLatte.EArr _ type_ expr -> prPrec i 6 (concatD [doc (showString "new"), prt 0 type_, doc (showString "["), prt 0 expr, doc (showString "]")])
     Latte.AbsLatte.EArrClass _ id_ expr -> prPrec i 6 (concatD [doc (showString "new"), prt 0 id_, doc (showString "["), prt 0 expr, doc (showString "]")])
     Latte.AbsLatte.EClass _ id_ -> prPrec i 6 (concatD [doc (showString "new"), prt 0 id_])
     Latte.AbsLatte.EAttr _ expr id_ -> prPrec i 6 (concatD [prt 6 expr, doc (showString "."), prt 0 id_])
+    Latte.AbsLatte.EMethod _ expr id_ exprs -> prPrec i 6 (concatD [prt 6 expr, doc (showString "."), prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")")])
     Latte.AbsLatte.Neg _ expr -> prPrec i 5 (concatD [doc (showString "-"), prt 6 expr])
     Latte.AbsLatte.Not _ expr -> prPrec i 5 (concatD [doc (showString "!"), prt 6 expr])
     Latte.AbsLatte.EMul _ expr1 mulop expr2 -> prPrec i 4 (concatD [prt 4 expr1, prt 0 mulop, prt 5 expr2])

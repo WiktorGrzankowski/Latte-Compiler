@@ -14,12 +14,22 @@ type Pos = BNFC'Position
 type Loc = Int
 type Var = String
 data CompilerError = CompilerError { text :: String, position :: Pos }
-data VType = VInt | VStr | VBool | VVoid | VArr VType | VClass Var |VNull
+data VType = VInt | VStr | VBool | VVoid | VArr VType | VClass Var | VNull | VSelf
 data FunT = FunT { funType :: VType, argTypes :: [VType] }
 type Env = Map Var VType
 type EnvFun = Map Var FunT
 type EnvClass = Map Var Env
-data StmtCheck = StmtCheck { varEnv :: Env, funEnv :: EnvFun, classEnv :: EnvClass, returnType :: VType, redefinedVars :: Set Var, retSet :: Bool  }
+type EnvFunClass = Map Var EnvFun
+data StmtCheck = StmtCheck { 
+                            varEnv :: Env, 
+                            funEnv :: EnvFun, 
+                            classEnv :: EnvClass, 
+                            classFunEnv :: EnvFunClass,
+                            returnType :: VType, 
+                            redefinedVars :: Set Var, 
+                            retSet :: Bool,
+                            currClass :: Var
+                            }
 
 type TypeCheckerMonad a = ExceptT CompilerError (State StmtCheck) a
 
@@ -36,6 +46,7 @@ instance Show VType where
     show (VArr vt) = "array [" ++ (show vt) ++ "]"
     show (VClass className) = "class " ++ (show className)
     show VNull = "null"
+    show VSelf = "self"
 
 areInts :: VType -> VType -> Bool
 areInts VInt VInt = True

@@ -20,13 +20,13 @@ runFromString :: String -> String -> IO ()
 runFromString filename code = case pProgram (myLexer code) of
     Ok code -> case checkTypes code of
         Ok _ -> do
-            output <- compile code
-            let outputFile = dropExtension filename ++ ".s"
-            let oFile = dropExtension filename ++ ".o"
-            let executableFile = dropExtension filename
-            Data.Text.Lazy.IO.writeFile outputFile (toLazyText output)
-            system $ "nasm -f elf64 " ++ outputFile
-            system $ "gcc -m64 -no-pie lib/runtime.o -o " ++ executableFile ++ " " ++ oFile 
+            -- output <- compile code
+            -- let outputFile = dropExtension filename ++ ".s"
+            -- let oFile = dropExtension filename ++ ".o"
+            -- let executableFile = dropExtension filename
+            -- Data.Text.Lazy.IO.writeFile outputFile (toLazyText output)
+            -- system $ "nasm -f elf64 " ++ outputFile
+            -- system $ "gcc -m64 -z noexecstack -no-pie lib/runtime.o -o " ++ executableFile ++ " " ++ oFile 
             System.IO.putStrLn "OK"
         Left err -> System.IO.putStrLn $ show err
     Left err -> System.IO.putStrLn err

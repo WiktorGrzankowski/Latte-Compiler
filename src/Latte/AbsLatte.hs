@@ -26,10 +26,13 @@ type TopDef = TopDef' BNFC'Position
 data TopDef' a
     = FnDef a (Type' a) Ident [Arg' a] (Block' a)
     | ClassDef a Ident [ClassAttr' a]
+    | ClassDefE a Ident Ident [ClassAttr' a]
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type ClassAttr = ClassAttr' BNFC'Position
-data ClassAttr' a = ClassField a (Type' a) Ident
+data ClassAttr' a
+    = ClassField a (Type' a) Ident
+    | ClassMethod a (Type' a) Ident [Arg' a] (Block' a)
   deriving (C.Eq, C.Ord, C.Show, C.Read, C.Functor, C.Foldable, C.Traversable)
 
 type Arg = Arg' BNFC'Position
@@ -85,10 +88,12 @@ data Expr' a
     | ELitFalse a
     | EApp a Ident [Expr' a]
     | EString a String
+    | ESelf a
     | EArr a (Type' a) (Expr' a)
     | EArrClass a Ident (Expr' a)
     | EClass a Ident
     | EAttr a (Expr' a) Ident
+    | EMethod a (Expr' a) Ident [Expr' a]
     | Neg a (Expr' a)
     | Not a (Expr' a)
     | EMul a (Expr' a) (MulOp' a) (Expr' a)
@@ -138,10 +143,12 @@ instance HasPosition TopDef where
   hasPosition = \case
     FnDef p _ _ _ _ -> p
     ClassDef p _ _ -> p
+    ClassDefE p _ _ _ -> p
 
 instance HasPosition ClassAttr where
   hasPosition = \case
     ClassField p _ _ -> p
+    ClassMethod p _ _ _ _ -> p
 
 instance HasPosition Arg where
   hasPosition = \case
@@ -195,10 +202,12 @@ instance HasPosition Expr where
     ELitFalse p -> p
     EApp p _ _ -> p
     EString p _ -> p
+    ESelf p -> p
     EArr p _ _ -> p
     EArrClass p _ _ -> p
     EClass p _ -> p
     EAttr p _ _ -> p
+    EMethod p _ _ _ -> p
     Neg p _ -> p
     Not p _ -> p
     EMul p _ _ _ -> p

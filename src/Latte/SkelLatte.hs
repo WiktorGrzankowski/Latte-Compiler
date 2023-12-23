@@ -27,10 +27,12 @@ transTopDef :: Show a => Latte.AbsLatte.TopDef' a -> Result
 transTopDef x = case x of
   Latte.AbsLatte.FnDef _ type_ ident args block -> failure x
   Latte.AbsLatte.ClassDef _ ident classattrs -> failure x
+  Latte.AbsLatte.ClassDefE _ ident1 ident2 classattrs -> failure x
 
 transClassAttr :: Show a => Latte.AbsLatte.ClassAttr' a -> Result
 transClassAttr x = case x of
   Latte.AbsLatte.ClassField _ type_ ident -> failure x
+  Latte.AbsLatte.ClassMethod _ type_ ident args block -> failure x
 
 transArg :: Show a => Latte.AbsLatte.Arg' a -> Result
 transArg x = case x of
@@ -84,10 +86,12 @@ transExpr x = case x of
   Latte.AbsLatte.ELitFalse _ -> failure x
   Latte.AbsLatte.EApp _ ident exprs -> failure x
   Latte.AbsLatte.EString _ string -> failure x
+  Latte.AbsLatte.ESelf _ -> failure x
   Latte.AbsLatte.EArr _ type_ expr -> failure x
   Latte.AbsLatte.EArrClass _ ident expr -> failure x
   Latte.AbsLatte.EClass _ ident -> failure x
   Latte.AbsLatte.EAttr _ expr ident -> failure x
+  Latte.AbsLatte.EMethod _ expr ident exprs -> failure x
   Latte.AbsLatte.Neg _ expr -> failure x
   Latte.AbsLatte.Not _ expr -> failure x
   Latte.AbsLatte.EMul _ expr1 mulop expr2 -> failure x

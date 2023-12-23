@@ -31,10 +31,11 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Latte are the following:
   | ``boolean`` | ``class`` | ``else`` | ``error``
-  | ``false`` | ``for`` | ``if`` | ``int``
-  | ``new`` | ``null`` | ``printInt`` | ``printString``
-  | ``readInt`` | ``readString`` | ``return`` | ``string``
-  | ``true`` | ``void`` | ``while`` |
+  | ``extends`` | ``false`` | ``for`` | ``if``
+  | ``int`` | ``new`` | ``null`` | ``printInt``
+  | ``printString`` | ``readInt`` | ``readString`` | ``return``
+  | ``self`` | ``string`` | ``true`` | ``void``
+  | ``while`` |  |  |
 
 The symbols used in Latte are the following:
   | ( | ) | ; | {
@@ -57,7 +58,9 @@ All other symbols are terminals.
   | //Program// | -> | //[TopDef]//
   | //TopDef// | -> | //Type// //Ident// ``(`` //[Arg]// ``)`` //Block//
   |  |  **|**  | ``class`` //Ident// ``{`` //[ClassAttr]// ``}``
+  |  |  **|**  | ``class`` //Ident// ``extends`` //Ident// ``{`` //[ClassAttr]// ``}``
   | //ClassAttr// | -> | //Type// //Ident// ``;``
+  |  |  **|**  | //Type// //Ident// ``(`` //[Arg]// ``)`` //Block//
   | //[ClassAttr]// | -> | **eps**
   |  |  **|**  | //ClassAttr// //[ClassAttr]//
   | //[TopDef]// | -> | //TopDef//
@@ -106,10 +109,12 @@ All other symbols are terminals.
   |  |  **|**  | ``false``
   |  |  **|**  | //Ident// ``(`` //[Expr]// ``)``
   |  |  **|**  | //String//
+  |  |  **|**  | ``self``
   |  |  **|**  | ``new`` //Type// ``[`` //Expr// ``]``
   |  |  **|**  | ``new`` //Ident// ``[`` //Expr// ``]``
   |  |  **|**  | ``new`` //Ident//
   |  |  **|**  | //Expr6// ``.`` //Ident//
+  |  |  **|**  | //Expr6// ``.`` //Ident// ``(`` //[Expr]// ``)``
   |  |  **|**  | ``(`` //Expr// ``)``
   | //Expr5// | -> | ``-`` //Expr6//
   |  |  **|**  | ``!`` //Expr6//

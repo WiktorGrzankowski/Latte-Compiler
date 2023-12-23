@@ -52,24 +52,26 @@ import Latte.LexLatte
   'class'       { PT _ (TS _ 27) }
   'else'        { PT _ (TS _ 28) }
   'error'       { PT _ (TS _ 29) }
-  'false'       { PT _ (TS _ 30) }
-  'for'         { PT _ (TS _ 31) }
-  'if'          { PT _ (TS _ 32) }
-  'int'         { PT _ (TS _ 33) }
-  'new'         { PT _ (TS _ 34) }
-  'null'        { PT _ (TS _ 35) }
-  'printInt'    { PT _ (TS _ 36) }
-  'printString' { PT _ (TS _ 37) }
-  'readInt'     { PT _ (TS _ 38) }
-  'readString'  { PT _ (TS _ 39) }
-  'return'      { PT _ (TS _ 40) }
-  'string'      { PT _ (TS _ 41) }
-  'true'        { PT _ (TS _ 42) }
-  'void'        { PT _ (TS _ 43) }
-  'while'       { PT _ (TS _ 44) }
-  '{'           { PT _ (TS _ 45) }
-  '||'          { PT _ (TS _ 46) }
-  '}'           { PT _ (TS _ 47) }
+  'extends'     { PT _ (TS _ 30) }
+  'false'       { PT _ (TS _ 31) }
+  'for'         { PT _ (TS _ 32) }
+  'if'          { PT _ (TS _ 33) }
+  'int'         { PT _ (TS _ 34) }
+  'new'         { PT _ (TS _ 35) }
+  'null'        { PT _ (TS _ 36) }
+  'printInt'    { PT _ (TS _ 37) }
+  'printString' { PT _ (TS _ 38) }
+  'readInt'     { PT _ (TS _ 39) }
+  'readString'  { PT _ (TS _ 40) }
+  'return'      { PT _ (TS _ 41) }
+  'self'        { PT _ (TS _ 42) }
+  'string'      { PT _ (TS _ 43) }
+  'true'        { PT _ (TS _ 44) }
+  'void'        { PT _ (TS _ 45) }
+  'while'       { PT _ (TS _ 46) }
+  '{'           { PT _ (TS _ 47) }
+  '||'          { PT _ (TS _ 48) }
+  '}'           { PT _ (TS _ 49) }
   L_Ident       { PT _ (TV _)    }
   L_integ       { PT _ (TI _)    }
   L_quoted      { PT _ (TL _)    }
@@ -93,10 +95,12 @@ TopDef :: { (Latte.AbsLatte.BNFC'Position, Latte.AbsLatte.TopDef) }
 TopDef
   : Type Ident '(' ListArg ')' Block { (fst $1, Latte.AbsLatte.FnDef (fst $1) (snd $1) (snd $2) (snd $4) (snd $6)) }
   | 'class' Ident '{' ListClassAttr '}' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.ClassDef (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
+  | 'class' Ident 'extends' Ident '{' ListClassAttr '}' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.ClassDefE (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4) (snd $6)) }
 
 ClassAttr :: { (Latte.AbsLatte.BNFC'Position, Latte.AbsLatte.ClassAttr) }
 ClassAttr
   : Type Ident ';' { (fst $1, Latte.AbsLatte.ClassField (fst $1) (snd $1) (snd $2)) }
+  | Type Ident '(' ListArg ')' Block { (fst $1, Latte.AbsLatte.ClassMethod (fst $1) (snd $1) (snd $2) (snd $4) (snd $6)) }
 
 ListClassAttr :: { (Latte.AbsLatte.BNFC'Position, [Latte.AbsLatte.ClassAttr]) }
 ListClassAttr
@@ -181,10 +185,12 @@ Expr6
   | 'false' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.ELitFalse (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1))) }
   | Ident '(' ListExpr ')' { (fst $1, Latte.AbsLatte.EApp (fst $1) (snd $1) (snd $3)) }
   | String { (fst $1, Latte.AbsLatte.EString (fst $1) (snd $1)) }
+  | 'self' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.ESelf (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1))) }
   | 'new' Type '[' Expr ']' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.EArr (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
   | 'new' Ident '[' Expr ']' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.EArrClass (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $2) (snd $4)) }
   | 'new' Ident { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), Latte.AbsLatte.EClass (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1)) (snd $2)) }
   | Expr6 '.' Ident { (fst $1, Latte.AbsLatte.EAttr (fst $1) (snd $1) (snd $3)) }
+  | Expr6 '.' Ident '(' ListExpr ')' { (fst $1, Latte.AbsLatte.EMethod (fst $1) (snd $1) (snd $3) (snd $5)) }
   | '(' Expr ')' { (uncurry Latte.AbsLatte.BNFC'Position (tokenLineCol $1), (snd $2)) }
 
 Expr5 :: { (Latte.AbsLatte.BNFC'Position, Latte.AbsLatte.Expr) }

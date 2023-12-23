@@ -19,6 +19,9 @@ checkExp (EString _ _) = return VStr
 checkExp (ELitTrue _) = return VBool
 checkExp (ELitFalse _) = return VBool
 checkExp (ENull _) = return VNull
+checkExp (ESelf _) = do
+    className <- gets currClass
+    return $ VClass className
 
 checkExp (Not pos e) = do
     t <- checkExp e
@@ -125,6 +128,21 @@ checkExp (EAttr pos e (Ident field)) =
                 (VArr _) -> checkArrSize pos e
                 _ -> checkClassElem pos e field
         _ -> checkClassElem pos e field
+
+checkExp (EMethod pos e (Ident f) exprs) = do
+    memory <- get
+    eType <- checkExp e
+    case eType of
+        VClass className -> do
+            let classMethods = Map.lookup className (classFunEnv memory)
+            case classMethods of
+                Just methodEnv -> do
+                    case Map.lookup f methodEnv of
+                        Just (FunT {funType = fType}) -> return fType
+                        Nothing -> throwError $ CompilerError { text = "Type " ++ (show (VClass className)) ++ " does not have method " ++ (show f) ++ ".", position = pos }
+                Nothing -> throwError $ CompilerError { text = "Class " ++ (show className) ++ " is not defined in this scope.", position = pos }
+                
+        other -> throwError $ CompilerError { text = "Type mismatch! Methods cannot be called for type " ++ (show other) ++ ".", position = pos }
 
 checkExp (EApp pos (Ident f) exprs) = do
     memory <- get

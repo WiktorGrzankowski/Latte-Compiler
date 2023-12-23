@@ -1,14 +1,25 @@
+class Counter {
+  int val;
 
-int main() {
-  int[] a = new int[3];
-  a[0] = 1;
-  a[1] = 2;
-  a[2] = 3;
-  int[] b = new int[4];
-  for (int x : a) {
-    b[x] = x + 100;
+  void f() {
+    int x;
+    val = 12;
+    string s = self.f2();
+    int i = f2();
   }
-  for (int x : b) 
-    printInt(x);
-  return 0 ;
+
+  string f2() {
+    return "Piotr Chrzastowski-Wachtel.";
+  }
+}
+
+int f2() {
+  return 99;
+}
+
+
+int main () {
+  Counter c = new Counter;
+  c.f();
+  return 0;
 }

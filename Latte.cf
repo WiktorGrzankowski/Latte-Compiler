@@ -6,11 +6,13 @@ Prog.   Program ::= [TopDef] ;
 
 FnDef.	   TopDef ::= Type Ident "(" [Arg] ")" Block ;
 
-ClassField. ClassAttr ::= Type Ident ";" ;
+ClassField.  ClassAttr ::= Type Ident ";" ;
+ClassMethod. ClassAttr ::= Type Ident "(" [Arg] ")" Block ;
 
 separator ClassAttr "" ;
 
 ClassDef.  TopDef ::= "class" Ident "{" [ClassAttr]   "}" ;
+ClassDefE. TopDef ::= "class" Ident "extends" Ident "{" [ClassAttr]   "}" ;
 
 separator nonempty TopDef "" ;
 
@@ -98,6 +100,8 @@ EApp.      Expr6 ::= Ident "(" [Expr] ")" ;
 
 EString.   Expr6 ::= String ;
 
+ESelf.     Expr6 ::= "self" ;
+
 EArr.      Expr6 ::= "new" Type "[" Expr "]" ;
 
 EArrClass. Expr6 ::= "new" Ident "[" Expr "]" ;
@@ -105,6 +109,8 @@ EArrClass. Expr6 ::= "new" Ident "[" Expr "]" ;
 EClass.    Expr6 ::= "new" Ident;
 
 EAttr.     Expr6 ::= Expr6 "." Ident  ;
+
+EMethod.   Expr6 ::= Expr6 "." Ident "(" [Expr] ")" ;
 
 Neg.       Expr5 ::= "-" Expr6 ;
 

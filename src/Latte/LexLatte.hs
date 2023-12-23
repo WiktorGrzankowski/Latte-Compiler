@@ -222,28 +222,30 @@ eitherResIdent tv s = treeFind resWords
 -- | The keywords and symbols of the language organized as binary search tree.
 resWords :: BTree
 resWords =
-  b "[]" 24
-    (b "--" 12
-       (b ")" 6
-          (b "%" 3 (b "!=" 2 (b "!" 1 N N) N) (b "(" 5 (b "&&" 4 N N) N))
-          (b "++" 9 (b "+" 8 (b "*" 7 N N) N) (b "-" 11 (b "," 10 N N) N)))
-       (b "<=" 18
-          (b ":" 15 (b "/" 14 (b "." 13 N N) N) (b "<" 17 (b ";" 16 N N) N))
-          (b ">" 21
-             (b "==" 20 (b "=" 19 N N) N) (b "[" 23 (b ">=" 22 N N) N))))
-    (b "printInt" 36
-       (b "false" 30
-          (b "class" 27
-             (b "boolean" 26 (b "]" 25 N N) N)
-             (b "error" 29 (b "else" 28 N N) N))
-          (b "int" 33
-             (b "if" 32 (b "for" 31 N N) N) (b "null" 35 (b "new" 34 N N) N)))
-       (b "true" 42
-          (b "readString" 39
-             (b "readInt" 38 (b "printString" 37 N N) N)
-             (b "string" 41 (b "return" 40 N N) N))
-          (b "{" 45
-             (b "while" 44 (b "void" 43 N N) N) (b "}" 47 (b "||" 46 N N) N))))
+  b "]" 25
+    (b "." 13
+       (b "*" 7
+          (b "&&" 4
+             (b "!=" 2 (b "!" 1 N N) (b "%" 3 N N)) (b ")" 6 (b "(" 5 N N) N))
+          (b "," 10 (b "++" 9 (b "+" 8 N N) N) (b "--" 12 (b "-" 11 N N) N)))
+       (b "=" 19
+          (b ";" 16 (b ":" 15 (b "/" 14 N N) N) (b "<=" 18 (b "<" 17 N N) N))
+          (b ">=" 22
+             (b ">" 21 (b "==" 20 N N) N) (b "[]" 24 (b "[" 23 N N) N))))
+    (b "printString" 38
+       (b "for" 32
+          (b "error" 29
+             (b "class" 27 (b "boolean" 26 N N) (b "else" 28 N N))
+             (b "false" 31 (b "extends" 30 N N) N))
+          (b "new" 35
+             (b "int" 34 (b "if" 33 N N) N)
+             (b "printInt" 37 (b "null" 36 N N) N)))
+       (b "true" 44
+          (b "return" 41
+             (b "readString" 40 (b "readInt" 39 N N) N)
+             (b "string" 43 (b "self" 42 N N) N))
+          (b "{" 47
+             (b "while" 46 (b "void" 45 N N) N) (b "}" 49 (b "||" 48 N N) N))))
   where
   b s n = B bs (TS bs n)
     where
