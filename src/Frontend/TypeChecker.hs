@@ -21,6 +21,7 @@ emptyState = StmtCheck {
                         funEnv = Map.empty, 
                         classEnv = Map.empty, 
                         classFunEnv = Map.empty,
+                        classSuperclasses = Map.empty,
                         returnType = VVoid, 
                         redefinedVars = Set.empty, 
                         retSet = False ,
@@ -30,7 +31,10 @@ emptyState = StmtCheck {
 checkAll :: [TopDef] -> TypeCheckerMonad ()
 checkAll topDefs = do
     mapM_ preProdTopDefs topDefs
-    checkCircularInheritance topDefs
+    let inheritances = prepareDeps topDefs Map.empty
+    checkCircularInheritance inheritances
+    let superclasses = findAllSuperClasses inheritances
+    modify (\st -> st { classSuperclasses = superclasses})
     memory <- get
     case Map.lookup "main" (funEnv memory) of
         Just fun -> do
@@ -44,21 +48,34 @@ checkAll topDefs = do
     where
         errorText = "Function int main() is not defined. No program entrypoint."
 
-checkCircularInheritance :: [TopDef] -> TypeCheckerMonad ()
-checkCircularInheritance topDefs = do
-    let inheritances = prepareDeps topDefs Map.empty
+findAllSuperClasses :: Map String String -> Map String (Set String)
+findAllSuperClasses inheritance = 
+    Map.mapWithKey (\cls _ -> findSuperClasses cls Set.empty inheritance) inheritance
+    where
+        findSuperClasses :: String -> Set String -> Map String String -> Set String
+        findSuperClasses cls visited inheritance = 
+            case Map.lookup cls inheritance of
+                Nothing -> visited
+                Just superClass -> 
+                    if Set.member superClass visited
+                    then visited 
+                    else findSuperClasses superClass (Set.insert superClass visited) inheritance
+
+
+prepareDeps :: [TopDef] -> Map String String -> Map String String
+prepareDeps [] deps = deps
+prepareDeps ((FnDef _ _ _ _ _):rest) deps = prepareDeps rest deps
+prepareDeps ((ClassDef _ _ _):rest) deps = prepareDeps rest deps
+prepareDeps ((ClassDefE _ (Ident x) (Ident parent) _):rest) deps = prepareDeps rest (Map.insert x parent deps)
+
+checkCircularInheritance :: Map String String -> TypeCheckerMonad ()
+checkCircularInheritance inheritances = do
+    -- let inheritances = prepareDeps topDefs Map.empty
     case findCircularInheritance inheritances of
         [] -> return ()
         circles -> throwError $ CompilerError { text = "Circular inheritance in classes " ++ (show circles) ++ ".", position = Nothing }
 
-    return ()
     where
-        prepareDeps :: [TopDef] -> Map String String -> Map String String
-        prepareDeps [] deps = deps
-        prepareDeps ((FnDef _ _ _ _ _):rest) deps = prepareDeps rest deps
-        prepareDeps ((ClassDef _ _ _):rest) deps = prepareDeps rest deps
-        prepareDeps ((ClassDefE _ (Ident x) (Ident parent) _):rest) deps = prepareDeps rest (Map.insert x parent deps)
-        
         findCircularInheritance :: Map String String -> [String]
         findCircularInheritance classMap = nub $ concatMap (findCycle classMap Set.empty []) (Map.keys classMap)
 
@@ -86,10 +103,12 @@ preProdTopDefs (FnDef pos fType (Ident f) args block) = do
         Just _ -> throwError $ CompilerError { text = "Function " ++ (show f) ++ " is already defined.", position = Nothing }
 
 preProdTopDefs (ClassDef pos (Ident x) attrs) = do
-    (localEnv, localMethods) <- parseAttrs attrs
     memory <- get
     case Map.lookup x (classEnv memory) of
-        Nothing -> modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
+        Nothing -> do
+            modify (\st -> st { classEnv = Map.insert x Map.empty (classEnv st), classFunEnv = Map.insert x Map.empty (classFunEnv st) })
+            (localEnv, localMethods) <- parseAttrs attrs
+            modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
         Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
 
 preProdTopDefs (ClassDefE pos (Ident x) (Ident parent) attrs) = do
@@ -337,11 +356,11 @@ checkStmt (SExp pos e) = checkExp e >> return ()
 checkStmt (Ass pos (EVar pos2 x) eVal) = do
     varType <- checkExp (EVar pos2 x)
     valType <- checkExp eVal
-    assertSameType pos valType varType
+    matchType pos valType varType
 checkStmt (Ass pos (EVarArr pos2 e1 e2) eVal) = do
     varType <- checkExp (EVarArr pos2 e1 e2)
     valType <- checkExp eVal
-    assertSameType pos valType varType
+    matchType pos valType varType
 checkStmt (Ass pos (EAttr pos2 e (Ident id)) eVal) = do
     eType <- checkExp e 
     case eType of
@@ -349,7 +368,7 @@ checkStmt (Ass pos (EAttr pos2 e (Ident id)) eVal) = do
         _ -> do
             varType <- checkExp (EAttr pos2 e (Ident id))
             valType <- checkExp eVal
-            assertSameType pos valType varType
+            matchType pos valType varType
 checkStmt (Ass pos _ _) = throwError $ CompilerError { text = "Assignments can only be called on variables.", position = pos}
 
 checkStmt (VRet pos) = do

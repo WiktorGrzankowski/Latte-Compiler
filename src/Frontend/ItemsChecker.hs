@@ -60,4 +60,12 @@ checkItems t ((Init pos (Ident x) e) : rest) = do
                     False -> do
                         modify (\st -> st { varEnv = Map.insert x (vTypeFromType t) (varEnv memory), funEnv = funEnv memory, returnType = returnType memory, redefinedVars = Set.insert x (redefinedVars memory), retSet = retSet memory })
                         checkItems t rest
-        False -> throwError $ CompilerError { text = "Could not match type " ++ (show expType) ++ " with variable of type " ++ (show vt) ++ ".", position = pos}
+        False -> do
+            -- check if maybe expType is subclass of vt
+            liskovSub <- isSuperClass vt expType
+            case liskovSub of
+                False -> throwError $ CompilerError { text = "Could not match type " ++ (show expType) ++ " with variable of type " ++ (show vt) ++ ".", position = pos}
+                True -> do
+                    memory <- get
+                    modify (\st -> st { varEnv = Map.insert x (vTypeFromType t) (varEnv memory), funEnv = funEnv memory, returnType = returnType memory, redefinedVars = Set.insert x (redefinedVars memory), retSet = retSet memory })
+                    checkItems t rest

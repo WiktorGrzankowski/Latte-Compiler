@@ -20,11 +20,13 @@ type Env = Map Var VType
 type EnvFun = Map Var FunT
 type EnvClass = Map Var Env
 type EnvFunClass = Map Var EnvFun
+type EnvSuperclasses = Map Var (Set Var)
 data StmtCheck = StmtCheck { 
                             varEnv :: Env, 
                             funEnv :: EnvFun, 
                             classEnv :: EnvClass, 
                             classFunEnv :: EnvFunClass,
+                            classSuperclasses :: EnvSuperclasses,
                             returnType :: VType, 
                             redefinedVars :: Set Var, 
                             retSet :: Bool,
@@ -100,13 +102,18 @@ matchType :: Pos -> VType -> VType -> TypeCheckerMonad ()
 matchType pos actual expected = do
     case areSameType actual expected of
         True -> return ()
-        False -> throwError $ CompilerError { text = "Could not match type " ++ (show actual) ++ " with expected " ++ (show expected) ++ ".", position = pos}
+        False -> do
+            liskovSub <- isSuperClass expected actual
+            case liskovSub of
+                True -> return ()
+                False -> throwError $ CompilerError { text = "Could not match type " ++ (show actual) ++ " with expected " ++ (show expected) ++ ".", position = pos}
 
 assertInt :: Pos -> VType -> TypeCheckerMonad ()
 assertInt _ VInt = return ()
 assertInt pos vt = throwError $ CompilerError { text = "Could not match type " ++ (show vt) ++ " with expected " ++ (show VInt) ++ ".", position = pos}
 
-assertSameType :: Pos -> VType -> VType -> TypeCheckerMonad ()
-assertSameType pos actual expected = case areSameType actual expected of
-    True -> return ()
-    False -> throwError $ CompilerError { text = "Could not match type " ++ (show actual) ++ " with expected " ++ (show expected) ++ ".", position = pos}
+isSuperClass :: VType -> VType -> TypeCheckerMonad Bool
+isSuperClass (VClass superName) (VClass subName) = do
+    superclasses <- gets classSuperclasses
+    let subSupers = Map.findWithDefault Set.empty subName superclasses
+    return $ Set.member superName subSupers

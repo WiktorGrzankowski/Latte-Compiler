@@ -1,16 +1,14 @@
-class X extends Y {
+class Shape {
 
 }
 
-class Y extends Z {
+class Rectangle extends Shape {
 
 }
 
-class Z extends X {
-
-}
- 
 int main () {
-  X x = new X;
+  Shape s = new Rectangle;
+  s = new Rectangle;
   return 0;
+
 }
