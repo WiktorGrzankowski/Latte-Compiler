@@ -1,25 +1,16 @@
-class Counter {
-  int val;
+class X extends Y {
 
-  void f() {
-    int x;
-    val = 12;
-    string s = self.f2();
-    int i = f2();
-  }
-
-  string f2() {
-    return "Piotr Chrzastowski-Wachtel.";
-  }
 }
 
-int f2() {
-  return 99;
+class Y extends Z {
+
 }
 
+class Z extends X {
 
+}
+ 
 int main () {
-  Counter c = new Counter;
-  c.f();
+  X x = new X;
   return 0;
 }

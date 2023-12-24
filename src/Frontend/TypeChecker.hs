@@ -13,6 +13,7 @@ import Latte.ErrM
 import Latte.SkelLatte
 import Latte.PrintLatte
 import Latte.ParLatte
+import Data.List (nub)
 
 emptyState :: StmtCheck
 emptyState = StmtCheck { 
@@ -29,6 +30,7 @@ emptyState = StmtCheck {
 checkAll :: [TopDef] -> TypeCheckerMonad ()
 checkAll topDefs = do
     mapM_ preProdTopDefs topDefs
+    checkCircularInheritance topDefs
     memory <- get
     case Map.lookup "main" (funEnv memory) of
         Just fun -> do
@@ -41,6 +43,36 @@ checkAll topDefs = do
 
     where
         errorText = "Function int main() is not defined. No program entrypoint."
+
+checkCircularInheritance :: [TopDef] -> TypeCheckerMonad ()
+checkCircularInheritance topDefs = do
+    let inheritances = prepareDeps topDefs Map.empty
+    case findCircularInheritance inheritances of
+        [] -> return ()
+        circles -> throwError $ CompilerError { text = "Circular inheritance in classes " ++ (show circles) ++ ".", position = Nothing }
+
+    return ()
+    where
+        prepareDeps :: [TopDef] -> Map String String -> Map String String
+        prepareDeps [] deps = deps
+        prepareDeps ((FnDef _ _ _ _ _):rest) deps = prepareDeps rest deps
+        prepareDeps ((ClassDef _ _ _):rest) deps = prepareDeps rest deps
+        prepareDeps ((ClassDefE _ (Ident x) (Ident parent) _):rest) deps = prepareDeps rest (Map.insert x parent deps)
+        
+        findCircularInheritance :: Map String String -> [String]
+        findCircularInheritance classMap = nub $ concatMap (findCycle classMap Set.empty []) (Map.keys classMap)
+
+        findCycle :: Map String String -> Set String -> [String] -> String -> [String]
+        findCycle classMap visited path className =
+            case Map.lookup className classMap of
+                Nothing -> []
+                Just superClass ->
+                    if superClass `Set.member` visited
+                    then if superClass `elem` path
+                        then takeWhile (/= superClass) (reverse className : path) ++ [superClass]
+                        else []
+                    else findCycle classMap (Set.insert className visited) (className : path) superClass
+
 
 preProdTopDefs :: TopDef -> TypeCheckerMonad ()
 preProdTopDefs (FnDef pos fType (Ident f) args block) = do
@@ -59,6 +91,14 @@ preProdTopDefs (ClassDef pos (Ident x) attrs) = do
     case Map.lookup x (classEnv memory) of
         Nothing -> modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
         Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
+
+preProdTopDefs (ClassDefE pos (Ident x) (Ident parent) attrs) = do
+    (localEnv, localMethods) <- parseAttrs attrs
+    memory <- get
+    case Map.lookup x (classEnv memory) of
+        Nothing -> modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
+        Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
+
 
 parseAttrs :: [ClassAttr] -> TypeCheckerMonad (Env, EnvFun)
 parseAttrs attrs = go attrs Map.empty Map.empty where
@@ -98,40 +138,48 @@ checkTopDef (FnDef pos fType (Ident f) args block) = do
 
 -- nothing more required after preprocessing
 -- checkTopDef (ClassDef pos (Ident x) attrs) = return ()
+
+checkTopDef (ClassDefE pos (Ident className) (Ident parentName) attrs) = do
+    memory <- get
+    -- check if parent class even exists
+    case Map.lookup parentName (classEnv memory) of
+        Nothing -> throwError $ CompilerError { text = "Class " ++ (show parentName) ++ " is not defined.", position = pos }
+        _ -> checkTopDef (ClassDef pos (Ident className) attrs)
+            -- todo - get all variables from parent class
+
 checkTopDef (ClassDef pos (Ident className) attrs) = do
     modify (\st -> st {currClass = className})
     checkClassHelper (ClassDef pos (Ident className) attrs)
     modify (\st -> st {currClass = "(null)"})
 
-    where
-        checkClassHelper (ClassDef pos (Ident className) []) = return ()
-        checkClassHelper (ClassDef pos (Ident className) ((ClassField _ t (Ident x)):rest)) = checkTopDef (ClassDef pos (Ident className) rest)
-        checkClassHelper (ClassDef pos (Ident className) ((ClassMethod _ fType (Ident f) args block):rest)) = do
-            -- go all over method bodies and check if they are set correctly
-            -- bodies should know all functions, attribute variables and method arguments
-            memory <- get
-            let vars = varEnv memory
-            let classAttributes = Map.findWithDefault Map.empty className (classEnv memory)
-            (varsInFun, funArgTypes, redefArgs) <- parseArgs args classAttributes -- no variables are available
-            let newFun = FunT { funType = vTypeFromType fType, argTypes = funArgTypes }
+checkClassHelper (ClassDef pos (Ident className) []) = return ()
+checkClassHelper (ClassDef pos (Ident className) ((ClassField _ t (Ident x)):rest)) = checkTopDef (ClassDef pos (Ident className) rest)
+checkClassHelper (ClassDef pos (Ident className) ((ClassMethod _ fType (Ident f) args block):rest)) = do
+    -- go all over method bodies and check if they are set correctly
+    -- bodies should know all functions, attribute variables and method arguments
+    memory <- get
+    let vars = varEnv memory
+    let classAttributes = Map.findWithDefault Map.empty className (classEnv memory)
+    (varsInFun, funArgTypes, redefArgs) <- parseArgs args classAttributes -- no variables are available
+    let newFun = FunT { funType = vTypeFromType fType, argTypes = funArgTypes }
 
-            let classMethods = Map.findWithDefault Map.empty className (classFunEnv memory)
-            -- add newFun to methodEnv
-            let updatedClassMethods = Map.insert f newFun classMethods
+    let classMethods = Map.findWithDefault Map.empty className (classFunEnv memory)
+    -- add newFun to methodEnv
+    let updatedClassMethods = Map.insert f newFun classMethods
 
-            let updatedClassFunEnv = Map.insert className updatedClassMethods (classFunEnv memory)
+    let updatedClassFunEnv = Map.insert className updatedClassMethods (classFunEnv memory)
 
-            let redefVars = redefinedVars memory
-            modify (\st -> st {varEnv = varsInFun, returnType = vTypeFromType fType, classFunEnv = updatedClassFunEnv, redefinedVars = redefArgs, retSet = False})
-            checkBlock block True
-            isRetSet <- gets retSet
-            case isRetSet of
-                False -> case (vTypeFromType fType) of
-                    VVoid -> modify (\st -> st { varEnv = vars, returnType = returnType memory, classFunEnv = updatedClassFunEnv, redefinedVars = redefVars, retSet = False})
-                    _ -> throwError $ CompilerError { text = "Method " ++ (show f) ++ " does not end with a return statement.", position = pos }
-                True -> modify (\st -> st { varEnv = vars, returnType = returnType memory, classFunEnv = updatedClassFunEnv, redefinedVars = redefVars, retSet = False})
+    let redefVars = redefinedVars memory
+    modify (\st -> st {varEnv = varsInFun, returnType = vTypeFromType fType, classFunEnv = updatedClassFunEnv, redefinedVars = redefArgs, retSet = False})
+    checkBlock block True
+    isRetSet <- gets retSet
+    case isRetSet of
+        False -> case (vTypeFromType fType) of
+            VVoid -> modify (\st -> st { varEnv = vars, returnType = returnType memory, classFunEnv = updatedClassFunEnv, redefinedVars = redefVars, retSet = False})
+            _ -> throwError $ CompilerError { text = "Method " ++ (show f) ++ " does not end with a return statement.", position = pos }
+        True -> modify (\st -> st { varEnv = vars, returnType = returnType memory, classFunEnv = updatedClassFunEnv, redefinedVars = redefVars, retSet = False})
 
-            checkTopDef (ClassDef pos (Ident className) rest)
+    checkClassHelper (ClassDef pos (Ident className) rest)
 
     
 
