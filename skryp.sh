@@ -47,3 +47,5 @@ process_lat_files "lattests/good" "lattests/good"
 
 # Process .lat files in lattests/extensions/arrays1
 process_lat_files "lattests/extensions/arrays1" "lattests/extensions/arrays1"
+
+process_lat_files "lattests/extensions/objects1" "lattests/extensions/objects1"

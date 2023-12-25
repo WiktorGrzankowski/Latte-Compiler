@@ -4,12 +4,21 @@ class Animal {
 }
 
 class Dog extends Animal{
+
 }
 
+class Cat extends Animal {
+
+}
 
 int main () {
-  Dog dog = new Dog;
-  dog.name;
-  dog.f();
+  Dog doggo = new Dog;
+  Cat miau = new Cat;
+  Animal[] zoo = new Animal[2];
+  zoo[0] = doggo;
+  zoo[1] = miau;
+  for (Animal animal : zoo) {
+    animal.f();
+  }
   return 0;
 }
