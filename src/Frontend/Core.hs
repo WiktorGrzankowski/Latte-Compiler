@@ -139,6 +139,22 @@ getVarFromSuperclass x baseClass = do
                     case Map.lookup baseClass supers of
                         Nothing -> return Nothing
                         Just [] -> return Nothing -- no superclasses
-                        Just (s:rest) -> getVarFromSuperclass x s
+                        Just (s:_) -> getVarFromSuperclass x s
 
+getMethodFromSuperClass :: Var -> Var -> TypeCheckerMonad (Maybe FunT)
+getMethodFromSuperClass f baseClass = do
+    memory <- get
+    let baseClassMethods = Map.findWithDefault Map.empty baseClass (classFunEnv memory)
+    case Map.lookup f baseClassMethods of
+        Just t -> return $ Just t
+        Nothing -> do
+            case baseClass of
+                "(null)" -> return Nothing
+                _ -> do
+                    memory <- get
+                    let supers = classSuperclasses memory
+                    case Map.lookup baseClass supers of
+                        Nothing -> return Nothing
+                        Just [] -> return Nothing
+                        Just (s:_) -> getMethodFromSuperClass f s 
 

@@ -151,7 +151,12 @@ checkExp (EMethod pos e (Ident f) exprs) = do
                 Just methodEnv -> do
                     case Map.lookup f methodEnv of
                         Just (FunT {funType = fType}) -> return fType
-                        Nothing -> throwError $ CompilerError { text = "Type " ++ (show (VClass className)) ++ " does not have method " ++ (show f) ++ ".", position = pos }
+                        -- check if maybe it belongs to superclass
+                        Nothing -> do
+                            maybeFromSuper <- getMethodFromSuperClass f className
+                            case maybeFromSuper of
+                                Nothing -> throwError $ CompilerError { text = "Type " ++ (show (VClass className)) ++ " does not have method " ++ (show f) ++ ".", position = pos }
+                                Just (FunT {funType = fType}) -> return fType
                 Nothing -> throwError $ CompilerError { text = "Class " ++ (show className) ++ " is not defined in this scope.", position = pos }
                 
         other -> throwError $ CompilerError { text = "Type mismatch! Methods cannot be called for type " ++ (show other) ++ ".", position = pos }
@@ -187,7 +192,11 @@ checkClassElem pos e field = do
             case Map.lookup className (classEnv memory) of
                 Just env -> case Map.lookup field env of
                     Just attrType -> return attrType
-                    Nothing -> throwError $ CompilerError { text = "Class " ++ (show className) ++ " does not have field " ++ (show field) ++ ".", position = pos}
+                    Nothing -> do
+                        maybeFromSuper <- getVarFromSuperclass field className
+                        case maybeFromSuper of
+                            Just vt -> return vt
+                            Nothing -> throwError $ CompilerError { text = "Class " ++ (show className) ++ " does not have field " ++ (show field) ++ ".", position = pos}
         go pos vt field = throwError $ CompilerError { text = "Type mismatch! Expected class but got " ++ (show vt) ++ ".", position = pos}
 
 
