@@ -3,6 +3,7 @@ module Frontend.Core where
 import Data.Map as Map
 import Control.Monad.Except
 import Control.Monad.State
+import Data.List (find)
 import Data.Map as Map
 import Data.Set as Set
 import Latte.AbsLatte
@@ -20,7 +21,7 @@ type Env = Map Var VType
 type EnvFun = Map Var FunT
 type EnvClass = Map Var Env
 type EnvFunClass = Map Var EnvFun
-type EnvSuperclasses = Map Var (Set Var)
+type EnvSuperclasses = Map Var [Var]
 data StmtCheck = StmtCheck { 
                             varEnv :: Env, 
                             funEnv :: EnvFun, 
@@ -115,5 +116,29 @@ assertInt pos vt = throwError $ CompilerError { text = "Could not match type " +
 isSuperClass :: VType -> VType -> TypeCheckerMonad Bool
 isSuperClass (VClass superName) (VClass subName) = do
     superclasses <- gets classSuperclasses
-    let subSupers = Map.findWithDefault Set.empty subName superclasses
-    return $ Set.member superName subSupers
+    let subSupers = Map.findWithDefault [] subName superclasses
+    case find (== superName) subSupers of
+        Nothing -> return False
+        _ -> return True
+isSuperClass _ _ = return False
+
+getVarFromSuperclass :: Var -> Var -> TypeCheckerMonad (Maybe VType)
+getVarFromSuperclass x baseClass = do
+    -- first check if baseClass has the field
+    memory <- get
+    let baseClassVars = Map.findWithDefault Map.empty baseClass (classEnv memory)
+    case Map.lookup x baseClassVars of
+        Just t -> return $ Just t
+        Nothing -> do
+            case baseClass of
+                "(null)" -> return Nothing
+                _ -> do
+                    -- get all superclasses
+                    memory <- get
+                    let supers = classSuperclasses memory
+                    case Map.lookup baseClass supers of
+                        Nothing -> return Nothing
+                        Just [] -> return Nothing -- no superclasses
+                        Just (s:rest) -> getVarFromSuperclass x s
+
+

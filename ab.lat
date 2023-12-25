@@ -1,14 +1,13 @@
-class Shape {
-
+class Dog  {
+  int name;
+  void zzz() {
+    name = 19;
+  }
 }
 
-class Rectangle extends Shape {
 
-}
 
 int main () {
-  Shape s = new Rectangle;
-  s = new Rectangle;
   return 0;
 
 }

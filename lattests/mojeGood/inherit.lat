@@ -1,0 +1,17 @@
+class X extends Y {
+    
+}
+
+class Y extends Z {
+
+}
+
+class Z {
+
+}
+
+int main() {
+    Z z = new X;
+
+    return 0;
+}

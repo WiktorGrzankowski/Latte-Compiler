@@ -30,9 +30,9 @@ emptyState = StmtCheck {
 
 checkAll :: [TopDef] -> TypeCheckerMonad ()
 checkAll topDefs = do
-    mapM_ preProdTopDefs topDefs
     let inheritances = prepareDeps topDefs Map.empty
     checkCircularInheritance inheritances
+    mapM_ preProdTopDefs topDefs
     let superclasses = findAllSuperClasses inheritances
     modify (\st -> st { classSuperclasses = superclasses})
     memory <- get
@@ -48,18 +48,31 @@ checkAll topDefs = do
     where
         errorText = "Function int main() is not defined. No program entrypoint."
 
-findAllSuperClasses :: Map String String -> Map String (Set String)
+findAllSuperClasses :: Map String String -> Map String [String]
 findAllSuperClasses inheritance = 
-    Map.mapWithKey (\cls _ -> findSuperClasses cls Set.empty inheritance) inheritance
+    Map.mapWithKey (\cls _ -> reverse $ nub $ findSuperClasses cls [] inheritance) inheritance
     where
-        findSuperClasses :: String -> Set String -> Map String String -> Set String
+        findSuperClasses :: String -> [String] -> Map.Map String String -> [String]
         findSuperClasses cls visited inheritance = 
             case Map.lookup cls inheritance of
                 Nothing -> visited
                 Just superClass -> 
-                    if Set.member superClass visited
+                    if superClass `elem` visited
                     then visited 
-                    else findSuperClasses superClass (Set.insert superClass visited) inheritance
+                    else findSuperClasses superClass (superClass : visited) inheritance
+
+-- findAllSuperClasses :: Map String String -> Map String (Set String)
+-- findAllSuperClasses inheritance = 
+--     Map.mapWithKey (\cls _ -> findSuperClasses cls Set.empty inheritance) inheritance
+--     where
+--         findSuperClasses :: String -> Set String -> Map String String -> Set String
+--         findSuperClasses cls visited inheritance = 
+--             case Map.lookup cls inheritance of
+--                 Nothing -> visited
+--                 Just superClass -> 
+--                     if Set.member superClass visited
+--                     then visited 
+--                     else findSuperClasses superClass (Set.insert superClass visited) inheritance
 
 
 prepareDeps :: [TopDef] -> Map String String -> Map String String

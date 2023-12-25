@@ -19,9 +19,11 @@ checkExp (EString _ _) = return VStr
 checkExp (ELitTrue _) = return VBool
 checkExp (ELitFalse _) = return VBool
 checkExp (ENull _) = return VNull
-checkExp (ESelf _) = do
+checkExp (ESelf pos) = do
     className <- gets currClass
-    return $ VClass className
+    case className of
+        "(null)" -> throwError $ CompilerError { text = "Usage of .self is not allowed outside of class methods.", position = pos}
+        _ -> return $ VClass className
 
 checkExp (Not pos e) = do
     t <- checkExp e
@@ -52,8 +54,18 @@ checkExp (EOr pos e1 e2) = do
 checkExp (EVar pos (Ident x)) = do
     memory <- get
     case Map.lookup x (varEnv memory) of
-        Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos}
         Just t -> return t
+        Nothing -> do
+            -- look in superclasses
+            maybeFromSuper <-  getVarFromSuperclass x (currClass memory)
+            case maybeFromSuper of
+                Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos}
+                Just vt -> return vt
+-- checkExp (EVar pos (Ident x)) = do
+--     memory <- get
+--     case Map.lookup x (varEnv memory) of
+--         Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos}
+--         Just t -> return t
 
 checkExp (EVarArr pos e eInd) = do
     eType <- checkExp e 

@@ -1,0 +1,26 @@
+class Animal {
+  string name;
+  void f() {
+    printString(name);
+  }
+}
+
+class Dog extends Animal {
+  int name;
+// name type change
+  void zzz() {
+    name = 19;
+  }
+}
+
+class Mira extends Dog {
+// get name type from Dog and not from Animal
+  void mircia() {
+    name = 19;
+  }
+}
+
+
+int main () {
+  return 0;
+}
