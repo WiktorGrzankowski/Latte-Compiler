@@ -188,7 +188,17 @@ compExp (EAttr pos e (Ident field)) reg = do
         "length" -> do
             case eType of
                 TArr _ -> return (formatStrings [codeExp, fromString "   mov rax, [rax]\n"], TInt)
-
+        _ -> do
+            -- other class field
+            -- eType contains className, so in state you can find mapping from field to offset
+            case eType of
+                (TClass className) -> do
+                    memory <- get
+                    let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
+                    let (offset, fieldType) = Map.findWithDefault (0, TNull) field thisClassFields
+                    -- value is in [rax + offset]
+                    let getValue = fromString $ "   mov rax, [rax + " ++ (show offset) ++ "]\n"
+                    return (formatStrings [codeExp, getValue], fieldType)
 
 
 compExp (EVarArr pos e eInd) reg = do

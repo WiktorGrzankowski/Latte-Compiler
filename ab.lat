@@ -5,6 +5,7 @@ class Animal {
 
 int main() {
   Animal animal = new Animal;
-  int z = animal.x;
+  animal.x = 12;
+  printInt(animal.x);
   return 0;
 }

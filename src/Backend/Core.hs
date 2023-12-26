@@ -100,6 +100,7 @@ tTypeFromType (Int _) = TInt
 tTypeFromType (Str _) = TStr
 tTypeFromType (Bool _) = TBool
 tTypeFromType (ArrT _ t) = TArr $ tTypeFromType t
+tTypeFromType (ClassT _ (Ident x)) = TClass x
 
 allocateStack :: Integer -> Builder
 allocateStack i = fromString $ "   sub rsp, " ++ (show i) ++ "\n"

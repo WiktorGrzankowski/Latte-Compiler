@@ -188,6 +188,19 @@ compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
     let movValToArr = fromString $ "   mov [rax + 8 + " ++ "rdi * 8], rsi\n"
     return $ formatStrings [codeIdent, saveRax, codeInd, movIndToRdi, saveRax, codeVal, movValToRsi, retrieveRdi, retrieveRax, movValToArr]
 
+compStmt (Ass pos (EAttr pos2 e (Ident field)) eVal) = do
+    (codeClassEval, (TClass className)) <- compExp e "rax"
+    let saveRax = pushReg "rax"
+    (codeVal, _) <- compExp eVal "rax"
+    let movValToRdi = movToRegFromReg "rdi" "rax"
+    let retrieveRax = popReg "rax"
+    -- class pointer is in rax
+    -- value is in rdi
+    memory <- get
+    let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
+    let (offset, _) = Map.findWithDefault (0, TNull) field thisClassFields
+    let movValToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], rdi\n"
+    return $ formatStrings [codeClassEval, saveRax, codeVal, movValToRdi, retrieveRax, movValToPointer]
 
 compStmt (Incr _ (EVar _ (Ident x))) = do
     let incr = fromString "   inc rax\n"

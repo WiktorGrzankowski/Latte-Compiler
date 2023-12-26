@@ -26,6 +26,20 @@ main:
    mov [rax + 8], r12
    pop r12
    mov [rbp - 8], rax
+   mov rax, [rbp - 8]
+   push rax
+   mov rax, 12
+   mov rdi, rax
+   pop rax
+   mov [rax + 8], rdi
+   mov rax, [rbp - 8]
+   mov rax, [rax + 8]
+   mov rdi, rax
+   call printInt
+   mov rax, [rbp - 8]
+   mov rax, [rax + 0]
+   mov rdi, rax
+   call printString
    mov rax, 0
    jmp end1
 end1:
