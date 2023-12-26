@@ -51,11 +51,23 @@ void* allocateArray(size_t numElements, size_t elementSize) {
     void* ptr = calloc(numElements, elementSize);
 
     if (ptr == NULL) {
-        perror("Memory allocation failed.");
+        fprintf(stderr, "Memory allocation failed!\n");
         exit(1);
     }
 
     return ptr;
+}
+
+void* allocateClass(size_t size) {
+    void *memory = malloc(size);
+
+    if (memory == NULL) {
+        // Allocation failed
+        fprintf(stderr, "Memory allocation failed!\n");
+        exit(1);
+    }
+
+    return memory;
 }
 
 void error() {

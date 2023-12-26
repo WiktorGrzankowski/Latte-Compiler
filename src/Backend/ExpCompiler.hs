@@ -103,6 +103,47 @@ compExp (EApp pos (Ident f) exprs) reg = do
     case Map.lookup f funsTypes of
         Just vt -> return (formatStrings [prepareCode, fCall, stackCleanup], vt)
 
+compExp (EClass _ (Ident className)) reg = do
+    -- find the fields of the class
+    memory <- get
+    let classEnvs = classEnv memory
+    let thisClassFields = Map.findWithDefault Map.empty className classEnvs
+    let classSize = toInteger $ (Map.size thisClassFields) * 8 -- each field is 8 bytes long
+    -- allocate space on the stack
+    let movSizeToRdi = movToRegLiteralInt "rdi" classSize
+    let allocateSpace = fromString "   call allocateClass\n"
+    let code = formatStrings [movSizeToRdi, allocateSpace]
+    -- now set all fields to default values
+    defVals <- mapM setFieldToDefaultValues (toList thisClassFields)
+
+    return (formatStrings [code, formatStrings defVals], TClass className)
+
+    where
+        -- varName -> (offset, varType) -> code
+        setFieldToDefaultValues :: (Var, (Integer, TType)) -> CM Builder
+        setFieldToDefaultValues (x, (offset, TInt)) = do
+            -- set [rax + offset] to default value
+            let pushR12 = pushReg "r12"
+            let movValToR12 = movToRegLiteralInt "r12" 0
+            let movR12ToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], r12\n"
+            let popR12 = popReg "r12"
+            return $ formatStrings [pushR12, movValToR12, movR12ToPointer, popR12]
+        setFieldToDefaultValues (x, (offset, TBool)) = do
+            -- set [rax + offset] to default value
+            let pushR12 = pushReg "r12"
+            let movValToR12 = movToRegLiteralBool "r12" 0
+            let movR12ToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], r12\n"
+            let popR12 = popReg "r12"
+            return $ formatStrings [pushR12, movValToR12, movR12ToPointer, popR12]
+        setFieldToDefaultValues (x, (offset, TStr)) = do
+            -- set [rax + offset] to default value
+            let pushR12 = pushReg "r12"
+            let movValToR12 = fromString "   mov r12, s0\n"
+            let movR12ToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], r12\n"
+            let popR12 = popReg "r12"
+            return $ formatStrings [pushR12, movValToR12, movR12ToPointer, popR12]
+        setFieldToDefaultValues _ = return $ fromString ""
+
 compExp (EArr _ t e) reg = do
     let arrayType = tTypeFromType t
     let pushR12 = pushReg "r12"
@@ -118,10 +159,6 @@ compExp (EArr _ t e) reg = do
     case arrayType of
         TInt -> do
             let baseCode = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen, popR12]
-            -- let baseCode = formatStrings [pushR12, code, movSizeToRdi, accountForLengthAttr, saveSizeToR12, movTypeSizeToRsi, allocateSpace, setFirstPlaceToLen, popR12]
-            -- rax -> address of beginning of array
-            -- rax + 8 -> len
-
             return (baseCode, (TArr arrayType))
         TStr -> do
             let pushRax = pushReg "rax"
@@ -145,7 +182,6 @@ compExp (EArr _ t e) reg = do
 
     -- return (formatStrings [code, movSizeToRdi, movTypeSizeToRsi, allocateSpace], (TArr arrayType))
 
--- todo - nie dziala jeszze!!
 compExp (EAttr pos e (Ident field)) reg = do
     (codeExp, eType) <- compExp e reg
     case field of
@@ -153,7 +189,7 @@ compExp (EAttr pos e (Ident field)) reg = do
             case eType of
                 TArr _ -> return (formatStrings [codeExp, fromString "   mov rax, [rax]\n"], TInt)
 
-            
+
 
 compExp (EVarArr pos e eInd) reg = do
     (codeInd, _) <- compExp eInd "rax"

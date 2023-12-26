@@ -19,6 +19,7 @@ emptyState :: StmtState
 emptyState = StmtState { varEnv = Map.empty, 
                          funEnv = Map.empty, 
                          funEnvTypes = Map.empty,
+                         classEnv = Map.empty,
                          stackSize = 0, 
                          funArgs = [], 
                          hardcodedStrs = Map.fromList[("", "s0")], 
@@ -47,6 +48,7 @@ textSectionHeader = formatStrings [
     fromString "   extern readInt\n",
     fromString "   extern error\n",
     fromString "   extern allocateArray\n",
+    fromString "   extern allocateClass\n",
     fromString "   global main\n"
     ]
 
@@ -88,6 +90,10 @@ compTopDef (FnDef pos fType (Ident f) args block) = do
 
     return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize) + stackPadding), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
 
+compTopDef (ClassDef pos (Ident x) attrs) = do
+    -- todo - code
+    -- without methods nothing needs to be done actually
+    return $ fromString ""
 
 regArgsToStack :: Integer -> Integer -> [Arg] -> CM (Builder, Int)
 regArgsToStack _ _ [] = return (fromString "", 0)
@@ -279,13 +285,6 @@ compStmt (ForEach pos t (Ident x) e stmt) = do
     modify (\st -> st {stackSize = stackSize memory, varEnv = varEnv memory})
 
     return $ formatStrings[eCode, movLenToR12, movRaxToFirstElem, movArrToR11, spaceForIterator, checkIfEmptyArr, gotoEndIfEmptyArr, labelCode, redefineX, stmtCode, loopAgain, labelEndCode, deletSpaceForIterator ]
-    -- where
-    --     compItemForEachCase t e = do
-    --         code <- compAllItems t e
-    --         let getActualValue = fromString "   mov rax, [rax]\n"
-    --         offset <- gets stackSize
-    --         let updateVarValue = movToStackFromReg offset "rax"
-    --         return $ formatStrings [code, getActualValue, updateVarValue]
 
 
 
@@ -306,6 +305,25 @@ preprodAll ((FnDef pos fType (Ident f) args block):rest) = do
     modify (\st -> st { funEnv = Map.insert f argsNames funs, funEnvTypes = Map.insert f (tTypeFromType fType) funsTypes})
     preprodAll rest
 
+-- add className to state and its variables
+-- for now ignore any inheritance
+preprodAll ((ClassDef pos (Ident x) attrs):rest) = do
+    -- parse all attributes
+    modify (\st -> st {classEnv = Map.insert x Map.empty (classEnv st)})
+    let fields = parseAttrs attrs
+    modify (\st -> st {classEnv = Map.insert x fields (classEnv st)})
+    preprodAll rest
+
+-- Map <className, Map <attrName, offset in class>>
+parseAttrs :: [ClassAttr] -> Map Var (Integer, TType)
+parseAttrs attrs = helper attrs Map.empty 0 where
+    helper :: [ClassAttr] -> Map Var (Integer, TType) -> Integer -> Map Var (Integer, TType)
+    helper [] m _ = m
+    helper ((ClassField _ t (Ident x)):rest) m offset = do
+        helper rest (Map.insert x (offset, tTypeFromType t) m) (offset + 8)
+
+
+
 compileAll :: [TopDef] -> CM Builder
 compileAll topDefs = do
     preprodAll topDefs
@@ -320,5 +338,5 @@ compile :: Program -> IO Builder
 compile (Prog _ topDefs) = do
     (program, _) <- runStateT (runExceptT (catchError (compileAll topDefs) handleErr)) emptyState
     case program of
-        Left err -> return $ fromString "kodzik"
+        Left err -> return $ fromString "error"
         Right code -> return code

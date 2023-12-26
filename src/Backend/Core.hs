@@ -34,6 +34,7 @@ instance Show TType where
 data StmtState = StmtState { varEnv :: Env, 
                          funEnv :: EnvFun, 
                          funEnvTypes :: EnvFunTypes,
+                         classEnv :: EnvClass,
                          stackSize :: Integer, 
                          funArgs :: [(String, Type)], 
                          hardcodedStrs :: Map Var String, 

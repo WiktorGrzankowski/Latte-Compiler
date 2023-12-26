@@ -1,24 +1,10 @@
 class Animal {
   string name;
-  void f() {}
+  int x;
 }
 
-class Dog extends Animal{
-
-}
-
-class Cat extends Animal {
-
-}
-
-int main () {
-  Dog doggo = new Dog;
-  Cat miau = new Cat;
-  Animal[] zoo = new Animal[2];
-  zoo[0] = doggo;
-  zoo[1] = miau;
-  for (Animal animal : zoo) {
-    animal.f();
-  }
+int main() {
+  Animal animal = new Animal;
+  int z = animal.x;
   return 0;
 }
