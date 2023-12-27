@@ -1,11 +1,21 @@
-class Animal {
-  string name;
-  int x;
+class Z {
+  int z;
 }
 
+class Y extends Z {
+  int y;
+}
+
+class X extends Y {
+    int x;
+}
+
+
+
+
 int main() {
-  Animal animal = new Animal;
-  animal.x = 12;
-  printInt(animal.x);
-  return 0;
+    Z z = new X;
+    printInt(z.z);
+    printInt(z.y);
+    return 0;
 }

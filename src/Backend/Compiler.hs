@@ -14,12 +14,14 @@ import Data.Text.Lazy.Builder
 import Backend.ExpCompiler (compExp)
 import Backend.ItemCompiler (compAllItems, compItemForEachCase)
 import Backend.Core
+import Frontend.TypeChecker (findAllSuperClasses, prepareDeps)
 
 emptyState :: StmtState
 emptyState = StmtState { varEnv = Map.empty, 
                          funEnv = Map.empty, 
                          funEnvTypes = Map.empty,
                          classEnv = Map.empty,
+                         classSuperclasses = Map.empty,
                          stackSize = 0, 
                          funArgs = [], 
                          hardcodedStrs = Map.fromList[("", "s0")], 
@@ -90,10 +92,11 @@ compTopDef (FnDef pos fType (Ident f) args block) = do
 
     return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize) + stackPadding), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
 
-compTopDef (ClassDef pos (Ident x) attrs) = do
+compTopDef _ = do
     -- todo - code
     -- without methods nothing needs to be done actually
     return $ fromString ""
+
 
 regArgsToStack :: Integer -> Integer -> [Arg] -> CM (Builder, Int)
 regArgsToStack _ _ [] = return (fromString "", 0)
@@ -327,6 +330,66 @@ preprodAll ((ClassDef pos (Ident x) attrs):rest) = do
     modify (\st -> st {classEnv = Map.insert x fields (classEnv st)})
     preprodAll rest
 
+preprodAll ((ClassDefE _ (Ident x) (Ident parent) attrs):rest) = do
+    -- parse all attributes
+    modify (\st -> st {classEnv = Map.insert x Map.empty (classEnv st)})
+    let fields = parseAttrs attrs
+    modify (\st -> st {classEnv = Map.insert x fields (classEnv st)})
+    preprodAll rest
+
+getFieldsFromSuperclasses :: CM ()
+getFieldsFromSuperclasses = do
+    -- iterate over superclasses and add fields
+    memory <- get
+    -- go over each and update fields
+    let baseClasses = Map.keys (classSuperclasses memory)
+
+    helper baseClasses (classSuperclasses memory)
+
+    where
+        -- update fields for baseClasses with fields of their superClasses
+        helper :: [Var] -> Map Var [Var] -> CM ()
+        helper [] _ = return ()
+        helper (className:rest) envSupers = do
+            --iterate over all superclasses and add fields
+            let superclasses = Map.findWithDefault [] className envSupers
+            go className superclasses
+            helper rest envSupers
+        -- for a given baseClass, update with fields of superclasses
+        go :: Var -> [Var] -> CM ()
+        go _ [] = return ()
+        go className (super:rest) = do
+            classFields <- gets classEnv 
+            let superFields = Map.findWithDefault Map.empty super classFields
+            let baseFields = Map.findWithDefault Map.empty className classFields
+            go2 className baseFields superFields
+            go className rest
+        
+        go2 :: Var ->  Map Var (Integer, TType) -> Map Var (Integer, TType) -> CM ()
+        go2 className baseClass superClass = do
+            -- Get the current state
+            currentSt <- get
+
+            -- Process the superClass fields
+            let newBaseClass = Prelude.foldr (processField baseClass) baseClass (Map.toList superClass)
+
+            -- Update the state
+            let newSt = currentSt { classEnv = Map.insert className newBaseClass (classEnv currentSt) }
+            put newSt
+
+        -- Helper function to process each field of the superClass
+        processField :: Map Var (Integer, TType) -> (Var, (Integer, TType)) -> Map Var (Integer, TType) -> Map Var (Integer, TType)
+        processField baseClass (var, (offset, ttype)) acc =
+            if Map.member var baseClass
+            then acc  -- If the field exists in the baseClass, do nothing
+            else Map.insert var (newOffset, ttype) acc  -- Insert with updated offset
+            where
+                maxOffset = maximum $ 0 : Prelude.map fst (Map.elems baseClass)
+                newOffset = maxOffset + 8
+
+
+
+
 -- Map <className, Map <attrName, offset in class>>
 parseAttrs :: [ClassAttr] -> Map Var (Integer, TType)
 parseAttrs attrs = helper attrs Map.empty 0 where
@@ -335,11 +398,14 @@ parseAttrs attrs = helper attrs Map.empty 0 where
     helper ((ClassField _ t (Ident x)):rest) m offset = do
         helper rest (Map.insert x (offset, tTypeFromType t) m) (offset + 8)
 
-
+preprodInheritance :: [TopDef] -> CM ()
+preprodInheritance topDefs = modify (\st -> st {classSuperclasses = findAllSuperClasses (prepareDeps topDefs Map.empty)}) >> return ()
 
 compileAll :: [TopDef] -> CM Builder
 compileAll topDefs = do
+    preprodInheritance topDefs
     preprodAll topDefs
+    getFieldsFromSuperclasses
     code <- mapM compTopDef topDefs
     strs <- gets hardcodedStrs
     return $ formatStrings [dataSectionHeader strs, textSectionHeader, formatStrings code]

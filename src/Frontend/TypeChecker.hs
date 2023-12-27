@@ -61,20 +61,6 @@ findAllSuperClasses inheritance =
                     then visited 
                     else findSuperClasses superClass (superClass : visited) inheritance
 
--- findAllSuperClasses :: Map String String -> Map String (Set String)
--- findAllSuperClasses inheritance = 
---     Map.mapWithKey (\cls _ -> findSuperClasses cls Set.empty inheritance) inheritance
---     where
---         findSuperClasses :: String -> Set String -> Map String String -> Set String
---         findSuperClasses cls visited inheritance = 
---             case Map.lookup cls inheritance of
---                 Nothing -> visited
---                 Just superClass -> 
---                     if Set.member superClass visited
---                     then visited 
---                     else findSuperClasses superClass (Set.insert superClass visited) inheritance
-
-
 prepareDeps :: [TopDef] -> Map String String -> Map String String
 prepareDeps [] deps = deps
 prepareDeps ((FnDef _ _ _ _ _):rest) deps = prepareDeps rest deps

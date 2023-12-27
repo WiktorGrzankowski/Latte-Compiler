@@ -23,6 +23,7 @@ type Env = Map Var (Integer, TType)
 type EnvFun = Map Var [(String, Type)]
 type EnvFunTypes = Map Var TType
 type EnvClass = Map Var Env
+type EnvSuperclasses = Map Var [Var]
 
 instance Show TType where
     show TInt = "int"
@@ -30,11 +31,13 @@ instance Show TType where
     show TVoid = "void"
     show TBool = "bool"
     show (TArr vt) = "array [" ++ (show vt) ++ "]"
+    show (TClass var) = "class (" ++ (show var) ++ ")"
 
 data StmtState = StmtState { varEnv :: Env, 
                          funEnv :: EnvFun, 
                          funEnvTypes :: EnvFunTypes,
                          classEnv :: EnvClass,
+                         classSuperclasses :: EnvSuperclasses,
                          stackSize :: Integer, 
                          funArgs :: [(String, Type)], 
                          hardcodedStrs :: Map Var String, 

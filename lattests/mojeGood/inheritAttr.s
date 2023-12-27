@@ -1,5 +1,6 @@
 section .data
    s0 db '', 0
+   s1 db 'Mircia', 0
 
 section .text
    extern printInt
@@ -15,25 +16,31 @@ main:
    push rbp
    mov rbp, rsp
    sub rsp, 16
-   mov rdi, 24
+   mov rdi, 16
    call allocateClass
    push r12
-   mov r12, 0
+   mov r12, s0
    mov [rax + 0], r12
    pop r12
    push r12
-   mov r12, 0
+   mov r12, s0
    mov [rax + 8], r12
-   pop r12
-   push r12
-   mov r12, 0
-   mov [rax + 16], r12
    pop r12
    mov [rbp - 8], rax
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    mov rdi, rax
-   call printInt
+   call printString
+   mov rax, [rbp - 8]
+   push rax
+   mov rax, s1
+   mov rdi, rax
+   pop rax
+   mov [rax + 8], rdi
+   mov rax, [rbp - 8]
+   mov rax, [rax + 8]
+   mov rdi, rax
+   call printString
    mov rax, 0
    jmp end1
 end1:
