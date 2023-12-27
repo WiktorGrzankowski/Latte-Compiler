@@ -147,7 +147,7 @@ compExp (EClass _ (Ident className)) reg = do
 -- Z[] zs = new Z[12];
 compExp (EArrClass pos (Ident className) e) reg = compExp (EArr pos (ClassT pos (Ident className)) e) reg
 
-compExp (EArr _ t e) reg = do
+compExp (EArr pos t e) reg = do
     let arrayType = tTypeFromType t
     let pushR12 = pushReg "r12"
     (code, vt) <- compExp e "rax" -- array size
@@ -161,25 +161,26 @@ compExp (EArr _ t e) reg = do
 
     case arrayType of
         TStr -> do
+            labelNr <- gets labelId
             let pushRax = pushReg "rax"
             let popRax = popReg "rax"
             let saveSizeToR12 = movToRegFromReg "r12" "rdi"
             let movSizeBackToRcx = movToRegFromReg "rcx" "r12"
             -- set all values in "rax + 8 * (up to size)" to be s0
-            let loopLabel = "init_loop"
-            let loopEndLabel = "end_loop"
-            let checkIfEmptyArr = fromString "   test rcx, rcx\n   jz end_loop\n"
+            let loopLabel = "init_loop" ++ show (labelNr)
+            let loopEndLabel = "end_loop" ++ show (labelNr)
+            let checkIfEmptyArr = fromString $ "   test rcx, rcx\n   jz " ++ loopEndLabel ++ "\n"
             let loopLabelStart = fromString $ loopLabel ++ ":\n"
             let loopEndLabelCode = fromString $ loopEndLabel ++ ":\n"
-            let insideLoop = formatStrings [fromString "   mov qword [rax + 8], s0\n", fromString "   add rax, 8\n", fromString "   loop init_loop\n"]
-
+            let insideLoop = formatStrings [fromString "   mov qword [rax + 8], s0\n", fromString "   add rax, 8\n", fromString $ "   loop " ++ loopLabel ++ "\n"]
+            modify (\st -> st {labelId = labelNr + 1})
             let initAllocation = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen]
             let initLoop = formatStrings [pushRax, movSizeBackToRcx, checkIfEmptyArr,loopLabelStart, insideLoop, loopEndLabelCode, popRax, popR12]
             return (formatStrings [initAllocation, initLoop], (TArr arrayType))
-        -- same for int and bool. classes too? should be as null. todo - handle nulls
         _ -> do
             let baseCode = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen, popR12]
             return (baseCode, (TArr arrayType))
+
     -- now the pointer is in "rax"
     -- add mapping var_name -> allocated_addr
 

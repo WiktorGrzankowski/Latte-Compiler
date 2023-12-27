@@ -1,16 +1,12 @@
-class Animal {
-  string name;
-}
-
-class Dog extends Animal {
-  string breed;
+class C {
+  int x;
+  int a;
 }
 
 int main() {
-  Dog dog = new Dog;
-  Animal[] animals = new Animal[2];
-  animals[0] = dog;
-  animals[0].name = "Mircia";
-  printString(animals[0].name);
+  C[] aaa = new C[12];
+  aaa[1] = new C;
+  aaa[1].x = 12;  
+  
   return 0;
 }
