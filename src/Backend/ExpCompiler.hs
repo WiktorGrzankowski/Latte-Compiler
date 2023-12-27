@@ -144,6 +144,9 @@ compExp (EClass _ (Ident className)) reg = do
             return $ formatStrings [pushR12, movValToR12, movR12ToPointer, popR12]
         setFieldToDefaultValues _ = return $ fromString ""
 
+-- Z[] zs = new Z[12];
+compExp (EArrClass pos (Ident className) e) reg = compExp (EArr pos (ClassT pos (Ident className)) e) reg
+
 compExp (EArr _ t e) reg = do
     let arrayType = tTypeFromType t
     let pushR12 = pushReg "r12"
@@ -157,9 +160,6 @@ compExp (EArr _ t e) reg = do
     let popR12 = popReg "r12"
 
     case arrayType of
-        TInt -> do
-            let baseCode = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen, popR12]
-            return (baseCode, (TArr arrayType))
         TStr -> do
             let pushRax = pushReg "rax"
             let popRax = popReg "rax"
@@ -176,7 +176,10 @@ compExp (EArr _ t e) reg = do
             let initAllocation = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen]
             let initLoop = formatStrings [pushRax, movSizeBackToRcx, checkIfEmptyArr,loopLabelStart, insideLoop, loopEndLabelCode, popRax, popR12]
             return (formatStrings [initAllocation, initLoop], (TArr arrayType))
-
+        -- same for int and bool. classes too? should be as null. todo - handle nulls
+        _ -> do
+            let baseCode = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen, popR12]
+            return (baseCode, (TArr arrayType))
     -- now the pointer is in "rax"
     -- add mapping var_name -> allocated_addr
 
@@ -199,6 +202,14 @@ compExp (EAttr pos e (Ident field)) reg = do
                     -- value is in [rax + offset]
                     let getValue = fromString $ "   mov rax, [rax + " ++ (show offset) ++ "]\n"
                     return (formatStrings [codeExp, getValue], fieldType)
+                (TArr (TClass className)) -> do
+                    -- rax points to element in the array
+                    memory <- get
+                    let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
+                    let (offset, fieldType) = Map.findWithDefault (0, TNull) field thisClassFields
+                    -- value is in [rax + offset]
+                    let getValue = fromString $ "   mov rax, [rax + " ++ (show offset) ++ "]\n"
+                    return (formatStrings [codeExp, getValue], fieldType)  
 
 
 compExp (EVarArr pos e eInd) reg = do

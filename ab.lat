@@ -1,21 +1,16 @@
-class Z {
-  int z;
+class Animal {
+  string name;
 }
 
-class Y extends Z {
-  int y;
+class Dog extends Animal {
+  string breed;
 }
-
-class X extends Y {
-    int x;
-}
-
-
-
 
 int main() {
-    Z z = new X;
-    printInt(z.z);
-    printInt(z.y);
-    return 0;
+  Dog dog = new Dog;
+  Animal[] animals = new Animal[2];
+  animals[0] = dog;
+  animals[0].name = "Mircia";
+  printString(animals[0].name);
+  return 0;
 }

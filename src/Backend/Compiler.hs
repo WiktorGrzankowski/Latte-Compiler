@@ -191,6 +191,23 @@ compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
     let movValToArr = fromString $ "   mov [rax + 8 + " ++ "rdi * 8], rsi\n"
     return $ formatStrings [codeIdent, saveRax, codeInd, movIndToRdi, saveRax, codeVal, movValToRsi, retrieveRdi, retrieveRax, movValToArr]
 
+compStmt (Ass pos (EAttr pos2 (EVarArr pos3 eIdent eInd) (Ident field)) eVal) = do
+    -- first get the array
+    (codeGetArr, (TArr (TClass className))) <- compExp (EVarArr pos3 eIdent eInd) "rax"
+    -- now pointer to n-th element in the array is in rax
+    let saveRax = pushReg "rax"
+    (codeVal, _) <- compExp eVal "rax"
+    let movValToRdi = movToRegFromReg "rdi" "rax"
+    let retrieveRax = popReg "rax"
+    -- class pointer is in rax
+    -- value is in rdi
+    memory <- get
+    let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
+    let (offset, _) = Map.findWithDefault (0, TNull) field thisClassFields
+    let movValToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], rdi\n"
+    return $ formatStrings [codeGetArr, saveRax, codeVal, movValToRdi, retrieveRax, movValToPointer]
+    -- then get the fiels
+
 compStmt (Ass pos (EAttr pos2 e (Ident field)) eVal) = do
     (codeClassEval, (TClass className)) <- compExp e "rax"
     let saveRax = pushReg "rax"
