@@ -40,7 +40,7 @@ compAllItems t ((NoInit pos (Ident x)) : rest) = do
     return $ formatStrings [raxToDefault, varToDefault, restCode]
     
 compAllItems t ((Init _ (Ident x) e) : rest) = do
-    (eCode, _) <- compExp e "rax"
+    (eCode, _) <- compExp e
     memory <- get
     let currentOffset = stackSize memory
     let newOffset = currentOffset + 8

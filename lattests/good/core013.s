@@ -14,6 +14,7 @@ section .text
    extern readInt
    extern error
    extern allocateArray
+   extern allocateClass
    global main
 main:
    push rbp

@@ -21,6 +21,7 @@ data VType = VInt Integer | VStr String | VBool Bool | VArr VType
 data FunT = FunT { funType :: VType, argTypes :: [VType] }
 type Env = Map Var (Integer, TType)
 type EnvFun = Map Var [(String, Type)]
+type EnvFunClass = Map Var EnvFun
 type EnvFunTypes = Map Var TType
 type EnvClass = Map Var Env
 type EnvSuperclasses = Map Var [Var]
@@ -37,6 +38,7 @@ data StmtState = StmtState { varEnv :: Env,
                          funEnv :: EnvFun, 
                          funEnvTypes :: EnvFunTypes,
                          classEnv :: EnvClass,
+                         classFunEnv :: EnvFunClass,
                          classSuperclasses :: EnvSuperclasses,
                          stackSize :: Integer, 
                          funArgs :: [(String, Type)], 

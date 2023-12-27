@@ -1,12 +1,13 @@
 class C {
   int x;
-  int a;
+  void f(int a) {
+    printInt(a);
+    printInt(x);
+  }
 }
 
 int main() {
-  C[] aaa = new C[12];
-  aaa[1] = new C;
-  aaa[1].x = 12;  
-  
+  C c = new C;
+  c.f(120);
   return 0;
 }
