@@ -75,16 +75,16 @@ Point3_$_moveZ:
    mov [rbp - 8], rdi
    mov [rbp - 16], rsi
    mov rax, [rbp - 8]
-   mov rax, [rax + 16]
+   mov rax, [rax + 0]
    mov rax, [rbp - 8]
-   mov rax, [rax + 16]
+   mov rax, [rax + 0]
    push rax
    mov rax, [rbp - 16]
    mov rdx, rax
    pop rax
    add rax, rdx
    mov rdi, [rbp - 8]
-   mov [rdi + 16], rax
+   mov [rdi + 0], rax
 end4:
    mov rsp, rbp
    pop rbp
@@ -95,7 +95,7 @@ Point3_$_getZ:
    sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
-   mov rax, [rax + 16]
+   mov rax, [rax + 0]
    jmp end5
 end5:
    mov rsp, rbp
@@ -108,16 +108,16 @@ Point4_$_moveW:
    mov [rbp - 8], rdi
    mov [rbp - 16], rsi
    mov rax, [rbp - 8]
-   mov rax, [rax + 40]
+   mov rax, [rax + 16]
    mov rax, [rbp - 8]
-   mov rax, [rax + 40]
+   mov rax, [rax + 16]
    push rax
    mov rax, [rbp - 16]
    mov rdx, rax
    pop rax
    add rax, rdx
    mov rdi, [rbp - 8]
-   mov [rdi + 40], rax
+   mov [rdi + 16], rax
 end6:
    mov rsp, rbp
    pop rbp
@@ -128,7 +128,7 @@ Point4_$_getW:
    sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
-   mov rax, [rax + 40]
+   mov rax, [rax + 16]
    jmp end7
 end7:
    mov rsp, rbp
@@ -150,7 +150,7 @@ main:
    pop r12
    push r12
    mov r12, 0
-   mov [rax + 16], r12
+   mov [rax + 0], r12
    pop r12
    mov [rbp - 8], rax
    mov rdi, 24
@@ -165,26 +165,26 @@ main:
    pop r12
    push r12
    mov r12, 0
-   mov [rax + 16], r12
+   mov [rax + 0], r12
    pop r12
    mov [rbp - 16], rax
    mov rdi, 32
    call allocateClass
    push r12
    mov r12, 0
-   mov [rax + 40], r12
-   pop r12
-   push r12
-   mov r12, 0
    mov [rax + 16], r12
    pop r12
    push r12
    mov r12, 0
-   mov [rax + 24], r12
+   mov [rax + 0], r12
    pop r12
    push r12
    mov r12, 0
-   mov [rax + 32], r12
+   mov [rax + 8], r12
+   pop r12
+   push r12
+   mov r12, 0
+   mov [rax + 0], r12
    pop r12
    mov [rbp - 24], rax
    mov rax, [rbp - 16]

@@ -475,14 +475,22 @@ getFieldsFromSuperclasses = do
                 getAllSuperFieldsHelper baseName (superName:otherNames) accMap startingOffset = do
                     memory <- get
                     let superClassFields = Map.findWithDefault Map.empty superName (classEnv memory) -- all fields
-                    let nextOffsetSize = toInteger $ (Map.size superClassFields) * 8
+                    let nextOffsetSize = toInteger $ (Map.size accMap) * 8
+                    -- let nextOffsetSize = toInteger $ (Map.size superClassFields) * 8
                     let newAccMap = mergeMaps accMap superClassFields startingOffset
                     getAllSuperFieldsHelper baseName otherNames newAccMap (startingOffset + nextOffsetSize)
-
-                mergeMaps :: Map Var (Integer, TType) -> Map Var (Integer, TType) -> Integer -> Map Var (Integer, TType)
-                mergeMaps m1 m2 offset = Map.foldrWithKey insertWithOffset m1 m2
+                    -- getAllSuperFieldsHelper baseName otherNames newAccMap (startingOffset + nextOffsetSize)
+                mergeMaps :: Map.Map Var (Integer, TType) -> Map.Map Var (Integer, TType) -> Integer -> Map.Map Var (Integer, TType)
+                mergeMaps m1 m2 offset = Prelude.foldr insertIfNotPresent m1 (Map.toList m2)
                     where
-                        insertWithOffset key (value, ttype) acc = Map.insert key (value + offset, ttype) acc
+                        insertIfNotPresent (key, (value, ttype)) accMap =
+                            if Map.member key accMap
+                                then accMap
+                                else Map.insert key (value + offset, ttype) accMap
+                -- mergeMaps :: Map Var (Integer, TType) -> Map Var (Integer, TType) -> Integer -> Map Var (Integer, TType)
+                -- mergeMaps m1 m2 offset = Map.foldrWithKey insertWithOffset m1 m2
+                --     where
+                --         insertWithOffset key (value, ttype) acc = Map.insert key (value + offset, ttype) acc
 
 
 preprodInheritance :: [TopDef] -> CM ()
