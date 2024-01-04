@@ -457,55 +457,33 @@ getFieldsFromSuperclasses = do
     let baseClasses = Map.keys (classSuperclasses memory)
     helper baseClasses (classSuperclasses memory)
     where
-        -- update fields for baseClasses with fields of their superClasses
         helper :: [Var] -> Map Var [Var] -> CM ()
         helper [] _ = return ()
         helper (className:rest) envSupers = do
-            --iterate over all superclasses and add fields
-            let superclasses = Map.findWithDefault [] className envSupers
-            go className superclasses
+            -- Get all fields from superclasses recursively and update the current class fields
+            let thisClassSupers = Map.findWithDefault [] className envSupers
+            allSuperFields <- getAllSuperFields className (reverse (className:thisClassSupers))
+            modify (\st -> st {classEnv = Map.insert className allSuperFields (classEnv st)})
+            -- updateClassFields className allSuperFields
             helper rest envSupers
-        -- for a given baseClass, update with fields of superclasses
-        go :: Var -> [Var] -> CM ()
-        go _ [] = return ()
-        go className (super:rest) = do
-            classFields <- gets classEnv 
-            classMethods <- gets classFunEnv
-            let superMethods = Map.findWithDefault Map.empty super classMethods
-            let baseMethods = Map.findWithDefault Map.empty className classMethods
-            let superFields = Map.findWithDefault Map.empty super classFields
-            let baseFields = Map.findWithDefault Map.empty className classFields
-            go2 className (baseFields, baseMethods) (superFields, superMethods)
-            go className rest
-        
-        go2 :: Var ->  (Map Var (Integer, TType), Map Var [(String, Type)]) -> (Map Var (Integer, TType), Map Var [(String, Type)]) -> CM ()
-        go2 className (baseClassFields, baseClassMethods) (superClassFields, sueprClassMethods) = do
-            -- Get the current state
-            currentSt <- get
 
-            -- Process the superClass fields
-            let newBaseClassFields = Prelude.foldr (processField baseClassFields) baseClassFields (Map.toList superClassFields)
-            let newBaseClasssMethods = mergeMaps baseClassMethods sueprClassMethods
-            -- Update the state
-            let newSt = currentSt { classEnv = Map.insert className newBaseClassFields (classEnv currentSt), classFunEnv = Map.insert className newBaseClasssMethods (classFunEnv currentSt) }
-            put newSt
+        getAllSuperFields :: Var -> [Var] -> CM (Map Var (Integer, TType))
+        getAllSuperFields baseName superNames = getAllSuperFieldsHelper baseName superNames Map.empty 0
+            where
+                getAllSuperFieldsHelper :: Var -> [Var] -> (Map Var (Integer, TType)) -> Integer -> CM (Map Var (Integer, TType))
+                getAllSuperFieldsHelper _ [] accMap _ = return accMap
+                getAllSuperFieldsHelper baseName (superName:otherNames) accMap startingOffset = do
+                    memory <- get
+                    let superClassFields = Map.findWithDefault Map.empty superName (classEnv memory) -- all fields
+                    let nextOffsetSize = toInteger $ (Map.size superClassFields) * 8
+                    let newAccMap = mergeMaps accMap superClassFields startingOffset
+                    getAllSuperFieldsHelper baseName otherNames newAccMap (startingOffset + nextOffsetSize)
 
-        mergeMaps :: Map Var [(String, Type)] -> Map Var [(String, Type)] -> Map Var [(String, Type)]
-        mergeMaps m1 m2 = Map.foldrWithKey insertIfNotExists m1 m2
-            where
-                insertIfNotExists key value acc =
-                    case Map.lookup key acc of
-                        Just _ -> acc  -- Key exists in m1, do nothing
-                        Nothing -> Map.insert key value acc  -- Key doesn't exist, insert the pair from m2
-        -- Helper function to process each field of the superClass
-        processField :: Map Var (Integer, TType) -> (Var, (Integer, TType)) -> Map Var (Integer, TType) -> Map Var (Integer, TType)
-        processField baseClass (var, (offset, ttype)) acc =
-            if Map.member var baseClass
-            then acc  -- If the field exists in the baseClass, do nothing
-            else Map.insert var (newOffset, ttype) acc  -- Insert with updated offset
-            where
-                maxOffset = maximum $ 0 : Prelude.map fst (Map.elems baseClass)
-                newOffset = maxOffset + 8
+                mergeMaps :: Map Var (Integer, TType) -> Map Var (Integer, TType) -> Integer -> Map Var (Integer, TType)
+                mergeMaps m1 m2 offset = Map.foldrWithKey insertWithOffset m1 m2
+                    where
+                        insertWithOffset key (value, ttype) acc = Map.insert key (value + offset, ttype) acc
+
 
 preprodInheritance :: [TopDef] -> CM ()
 preprodInheritance topDefs = modify (\st -> st {classSuperclasses = findAllSuperClasses (prepareDeps topDefs Map.empty)}) >> return ()
@@ -514,7 +492,7 @@ compileAll :: [TopDef] -> CM Builder
 compileAll topDefs = do
     preprodInheritance topDefs
     preprodAll topDefs
-    getFieldsFromSuperclasses
+    getFieldsFromSuperclasses    
     code <- mapM compTopDef topDefs
     strs <- gets hardcodedStrs
     return $ formatStrings [dataSectionHeader strs, textSectionHeader, formatStrings code]

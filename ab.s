@@ -34,11 +34,11 @@ main:
    call allocateClass
    push r12
    mov r12, s0
-   mov [rax + 0], r12
+   mov [rax + 8], r12
    pop r12
    push r12
    mov r12, s0
-   mov [rax + 8], r12
+   mov [rax + 0], r12
    pop r12
    mov [rbp - 8], rax
    mov rax, [rbp - 8]
@@ -46,13 +46,13 @@ main:
    mov rax, s1
    mov rdi, rax
    pop rax
-   mov [rax + 8], rdi
+   mov [rax + 0], rdi
    mov rax, [rbp - 8]
    push rax
    mov rax, s2
    mov rdi, rax
    pop rax
-   mov [rax + 0], rdi
+   mov [rax + 8], rdi
    mov rax, [rbp - 8]
    mov rdi, rax
    call Animal_$_sayName
