@@ -71,6 +71,7 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
     -- modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods, currClass = x})
     modify (\st -> st { currClass = x})
     code <- createMethods x attrs
+    modify (\st -> st {currClass = "(null)"})
     return code
     where
         createMethods :: Var -> [ClassAttr] -> CM Builder
@@ -90,6 +91,7 @@ compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = do
     -- modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods, currClass = x})
     modify (\st -> st { currClass = x})
     code <- createMethods x attrs
+    modify (\st -> st {currClass = "(null)"})
     return code
     where
         createMethods :: Var -> [ClassAttr] -> CM Builder
@@ -132,10 +134,6 @@ compTopDef (FnDef pos fType (Ident f) args block) = do
 
     return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize) + stackPadding), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
 
-compTopDef _ = do
-    -- todo - code
-    -- without methods nothing needs to be done actually
-    return $ fromString ""
 
 
 regArgsToStack :: Integer -> Integer -> [Arg] -> CM (Builder, Int)

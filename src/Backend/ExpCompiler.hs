@@ -123,33 +123,6 @@ compExp (EApp pos (Ident f) exprs) = do
     case Map.lookup f funsTypes of
         Just vt -> return (formatStrings [prepareCode, fCall, stackCleanup], vt)
 
--- compExp (EMethod pos (ESelf _) (Ident f) exprs) = do
---     -- its not called f, but ___classname___f___
---     -- maybe broken if its in an array but ok
---     className <- gets currClass
---     allSuperclasses <- gets classSuperclasses
---     methodIdent <- getMethodIdentInSuperclassses className f (Map.findWithDefault [] className allSuperclasses)
---     -- let methodIdent = getMethodIdent className f
-    
---     -- one difference - first argument is ALWAYS the instance of the class
---     let actualExprs = (e:exprs)
---     funArgsBefore <- gets funArgs
---     funs <- gets classFunEnv
---     funsTypes <- gets funEnvTypes
---     modify (\st -> st {currClass = className})
-
---     args <- getArgsFromSuperclassMethods className f
---     let actualArgs = (("self", (ClassT pos (Ident className))):args)
---     (prepareCode, funArgsSize) <- prepareArguments actualExprs actualArgs 1
-
---     let fCall = fromString $ "   call " ++ methodIdent ++ "\n"
---     -- let stackCleanup = fromString $ "   add rsp, " ++ show ((max ((length exprs - 6) * 8) 0)) ++ "\n"
---     let stackCleanup = fromString $ "   add rsp, " ++ (show funArgsSize) ++ "\n"
---     -- modify (\st -> st {funArgs = funArgsBefore})
---     modify (\st -> st {currClass = "(null)"})
---     case Map.lookup methodIdent funsTypes of
---         Just vt -> return (formatStrings [prepareCode, fCall, stackCleanup], vt)
-
 compExp (EMethod pos e (Ident f) exprs) = do
     -- its not called f, but ___classname___f___
     -- maybe broken if its in an array but ok
@@ -157,13 +130,13 @@ compExp (EMethod pos e (Ident f) exprs) = do
     allSuperclasses <- gets classSuperclasses
     methodIdent <- getMethodIdentInSuperclassses className f (Map.findWithDefault [] className allSuperclasses)
     -- let methodIdent = getMethodIdent className f
-    
+
     -- one difference - first argument is ALWAYS the instance of the class
     let actualExprs = (e:exprs)
     funArgsBefore <- gets funArgs
     funs <- gets classFunEnv
     funsTypes <- gets funEnvTypes
-    modify (\st -> st {currClass = className})
+    -- modify (\st -> st {currClass = className})
 
     args <- getArgsFromSuperclassMethods className f
     let actualArgs = (("self", (ClassT pos (Ident className))):args)
@@ -173,10 +146,9 @@ compExp (EMethod pos e (Ident f) exprs) = do
     -- let stackCleanup = fromString $ "   add rsp, " ++ show ((max ((length exprs - 6) * 8) 0)) ++ "\n"
     let stackCleanup = fromString $ "   add rsp, " ++ (show funArgsSize) ++ "\n"
     -- modify (\st -> st {funArgs = funArgsBefore})
-    modify (\st -> st {currClass = "(null)"})
+    -- modify (\st -> st {currClass = "(null)"})
     case Map.lookup methodIdent funsTypes of
         Just vt -> return (formatStrings [prepareCode, fCall, stackCleanup], vt)
-
 compExp (EClass _ (Ident className)) = do
     -- find the fields of the class
     memory <- get
@@ -416,4 +388,3 @@ compExp (ERel _ e1 relOp e2) = do
         getSet (LE _) = "   setle al\n"
         getSet (EQU _) = "   sete al\n"
         getSet (NE _) = "   setne al\n"
-         

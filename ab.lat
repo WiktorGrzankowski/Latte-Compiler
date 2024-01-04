@@ -1,16 +1,40 @@
-class Animal {
-  void f() {
-    printString("git");
-  }
+class Node {
+  int elem;
+  Node next;
 
-  void z(){
-    self.f();
+  void setElem (int e)  { elem = e; }
+  void setNext (Node n) { next = n; }
+
+  int  getElem () { return elem; }
+  Node getNext () { return next; }
+
+}
+
+class IntQueue {
+  Node front;
+  Node rear;
+
+  boolean isEmpty () { return front == null; }
+
+  void insert (int x) {
+    Node last = new Node;
+    last.setElem(x);
+    if (self.isEmpty())
+      front = last;
+    else 
+      rear.setNext(last);
+    rear = last;
   }
 }
 
+int f (int x) {
+  return x*x + 3;
+}
+
 int main () {
-  Animal a = new Animal;
-  a.z();
+  IntQueue q = new IntQueue;
+  q.insert(f(3));
+
   return 0;
 }
 
