@@ -32,7 +32,7 @@ emptyState = StmtState { varEnv = Map.empty,
                         }
 
 parseHardcodedString :: (String, String) -> Builder
-parseHardcodedString (name, val) = fromString $ "   " ++ val ++ " db " ++ "'" ++ name ++ "', 0\n"
+parseHardcodedString (name, val) = fromString $ "   " ++ val ++ " db " ++ "\"" ++ name ++ "\", 0\n"
 
 dataSectionHeader :: Map Var String -> Builder
 dataSectionHeader strs = do

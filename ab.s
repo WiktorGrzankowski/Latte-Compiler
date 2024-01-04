@@ -1,10 +1,10 @@
 section .data
-   s0 db '', 0
-   s1 db 'I'm a shape', 0
-   s2 db 'I'm just a shape', 0
-   s4 db 'I'm really a circle', 0
-   s3 db 'I'm really a rectangle', 0
-   s5 db 'I'm really a square', 0
+   s0 db "", 0
+   s1 db "I'm a shape", 0
+   s2 db "I'm just a shape", 0
+   s4 db "I'm really a circle", 0
+   s3 db "I'm really a rectangle", 0
+   s5 db "I'm really a square", 0
 
 section .text
    extern printInt
