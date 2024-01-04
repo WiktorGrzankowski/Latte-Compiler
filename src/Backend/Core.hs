@@ -11,6 +11,7 @@ import Latte.SkelLatte
 import Latte.PrintLatte
 import Latte.ParLatte
 import Data.Text.Lazy.Builder
+import Data.List.Split (splitOn)
 
 type Pos = BNFC'Position
 type Loc = Int
@@ -113,3 +114,25 @@ allocateStack i = fromString $ "   sub rsp, " ++ (show i) ++ "\n"
 
 alloc :: Map Var String -> String
 alloc strs = "s" ++ (show $ Map.size strs)
+
+getMethodIdent :: Var -> String -> String
+getMethodIdent className methodName = className ++ "_$_" ++ methodName
+
+getMethodNameFromIdent :: String -> String
+getMethodNameFromIdent ident = 
+    case splitOn "_$_" ident of
+        (_:method:_) -> method 
+        _ -> ""  
+
+
+-- it will always find it as type check was successful
+getMethodIdentInSuperclassses :: Var -> String -> [Var] -> CM String
+getMethodIdentInSuperclassses className methodName [] = return $ getMethodIdent className methodName
+getMethodIdentInSuperclassses className methodName (super:others) = do
+    memory <- get
+    -- get method names in superclass
+    let superFunEnv = Map.findWithDefault Map.empty super (classFunEnv memory)
+    let nameForSuper = getMethodIdent super methodName
+    case Map.lookup nameForSuper superFunEnv of
+        Nothing -> getMethodIdentInSuperclassses className methodName others
+        Just _ -> return nameForSuper

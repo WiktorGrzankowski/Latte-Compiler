@@ -124,7 +124,10 @@ compExp (EMethod pos e (Ident f) exprs) = do
     -- its not called f, but ___classname___f___
     -- maybe broken if its in an array but ok
     (codeGetClass, (TClass className)) <- compExp e
-    let methodIdent = "___" ++ className ++ "___" ++ f ++ "___"
+    allSuperclasses <- gets classSuperclasses
+    methodIdent <- getMethodIdentInSuperclassses className f (Map.findWithDefault [] className allSuperclasses)
+    -- let methodIdent = getMethodIdent className f
+    
     -- one difference - first argument is ALWAYS the instance of the class
     let actualExprs = (e:exprs)
     funArgsBefore <- gets funArgs

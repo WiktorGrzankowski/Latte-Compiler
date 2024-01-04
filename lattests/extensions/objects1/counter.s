@@ -26,19 +26,19 @@ main:
    mov [rbp - 8], rax
    mov rax, [rbp - 8]
    mov rdi, rax
-   call ___Counter___incr___
+   call Counter_$_incr
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
-   call ___Counter___incr___
+   call Counter_$_incr
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
-   call ___Counter___incr___
+   call Counter_$_incr
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
-   call ___Counter___value___
+   call Counter_$_value
    add rsp, 0
    mov [rbp - 16], rax
    mov rax, [rbp - 16]
@@ -50,7 +50,7 @@ end1:
    mov rsp, rbp
    pop rbp
    ret
-___Counter___incr___:
+Counter_$_incr:
    push rbp
    mov rbp, rsp
    sub rsp, 16
@@ -65,7 +65,7 @@ end2:
    mov rsp, rbp
    pop rbp
    ret
-___Counter___value___:
+Counter_$_value:
    push rbp
    mov rbp, rsp
    sub rsp, 16

@@ -76,7 +76,7 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
         createMethods :: Var -> [ClassAttr] -> CM Builder
         createMethods _ [] = return $ fromString ""
         createMethods className ((ClassMethod pos fType (Ident f) args block):rest) = do
-            let methodIdent = "___" ++ className ++ "___" ++ f ++ "___"
+            let methodIdent = getMethodIdent className f
             -- args have 1 more thing - the class itself
             code <- compTopDef (FnDef pos fType (Ident methodIdent) ((Ar pos (ClassT pos (Ident className)) (Ident "self")):args) block)
             restCode <- createMethods className rest
@@ -95,7 +95,7 @@ compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = do
         createMethods :: Var -> [ClassAttr] -> CM Builder
         createMethods _ [] = return $ fromString ""
         createMethods className ((ClassMethod pos fType (Ident f) args block):rest) = do
-            let methodIdent = "___" ++ className ++ "___" ++ f ++ "___"
+            let methodIdent = getMethodIdent className f
             -- args have 1 more thing - the class itself
             code <- compTopDef (FnDef pos fType (Ident methodIdent) ((Ar pos (ClassT pos (Ident className)) (Ident "self")):args) block)
             restCode <- createMethods className rest
@@ -422,10 +422,8 @@ preprodAll ((FnDef pos fType (Ident f) args block):rest) = do
 -- add className to state and its variables
 -- for now ignore any inheritance
 preprodAll ((ClassDef pos (Ident x) attrs):rest) = do
-    -- parse all attributes
-    modify (\st -> st {classEnv = Map.insert x Map.empty (classEnv st)})
+    modify (\st -> st {classEnv = Map.insert x Map.empty (classEnv st), classFunEnv = Map.insert x Map.empty (classFunEnv st)})
     (fields, methods) <- parseAttrs x attrs
-
     modify (\st -> st {classEnv = Map.insert x fields (classEnv st), classFunEnv = Map.insert x methods (classFunEnv st)})
     preprodAll rest
 
@@ -445,7 +443,7 @@ parseAttrs classIdent attrs = helper classIdent attrs Map.empty 0 Map.empty wher
     helper className ((ClassField _ t (Ident x)):rest) mAttr offset mFun = do
         helper className rest (Map.insert x (offset, tTypeFromType t) mAttr) (offset + 8) mFun
     helper className ((ClassMethod pos fType (Ident f) args block):rest) mAttr offset mFun = do
-        let methodIdent = "___" ++ className ++ "___" ++ f ++ "___"
+        let methodIdent = getMethodIdent className f
         modify (\st -> st {funEnvTypes = Map.insert methodIdent (tTypeFromType fType) (funEnvTypes st)})
         helper className rest mAttr offset (Map.insert methodIdent (parseArgs args []) mFun)
 
@@ -472,23 +470,33 @@ getFieldsFromSuperclasses = do
         go _ [] = return ()
         go className (super:rest) = do
             classFields <- gets classEnv 
+            classMethods <- gets classFunEnv
+            let superMethods = Map.findWithDefault Map.empty super classMethods
+            let baseMethods = Map.findWithDefault Map.empty className classMethods
             let superFields = Map.findWithDefault Map.empty super classFields
             let baseFields = Map.findWithDefault Map.empty className classFields
-            go2 className baseFields superFields
+            go2 className (baseFields, baseMethods) (superFields, superMethods)
             go className rest
         
-        go2 :: Var ->  Map Var (Integer, TType) -> Map Var (Integer, TType) -> CM ()
-        go2 className baseClass superClass = do
+        go2 :: Var ->  (Map Var (Integer, TType), Map Var [(String, Type)]) -> (Map Var (Integer, TType), Map Var [(String, Type)]) -> CM ()
+        go2 className (baseClassFields, baseClassMethods) (superClassFields, sueprClassMethods) = do
             -- Get the current state
             currentSt <- get
 
             -- Process the superClass fields
-            let newBaseClass = Prelude.foldr (processField baseClass) baseClass (Map.toList superClass)
-
+            let newBaseClassFields = Prelude.foldr (processField baseClassFields) baseClassFields (Map.toList superClassFields)
+            let newBaseClasssMethods = mergeMaps baseClassMethods sueprClassMethods
             -- Update the state
-            let newSt = currentSt { classEnv = Map.insert className newBaseClass (classEnv currentSt) }
+            let newSt = currentSt { classEnv = Map.insert className newBaseClassFields (classEnv currentSt), classFunEnv = Map.insert className newBaseClasssMethods (classFunEnv currentSt) }
             put newSt
 
+        mergeMaps :: Map Var [(String, Type)] -> Map Var [(String, Type)] -> Map Var [(String, Type)]
+        mergeMaps m1 m2 = Map.foldrWithKey insertIfNotExists m1 m2
+            where
+                insertIfNotExists key value acc =
+                    case Map.lookup key acc of
+                        Just _ -> acc  -- Key exists in m1, do nothing
+                        Nothing -> Map.insert key value acc  -- Key doesn't exist, insert the pair from m2
         -- Helper function to process each field of the superClass
         processField :: Map Var (Integer, TType) -> (Var, (Integer, TType)) -> Map Var (Integer, TType) -> Map Var (Integer, TType)
         processField baseClass (var, (offset, ttype)) acc =
