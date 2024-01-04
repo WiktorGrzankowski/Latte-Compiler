@@ -83,6 +83,24 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
             return $ formatStrings [code, restCode]
         createMethods className (_:rest) = createMethods className rest
 
+compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = do
+    memory <- get
+    let thisClassFields = Map.findWithDefault Map.empty x (classEnv memory)
+    let thisClassMethods = Map.findWithDefault Map.empty x (classFunEnv memory)
+    -- modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods, currClass = x})
+    modify (\st -> st { currClass = x})
+    code <- createMethods x attrs
+    return code
+    where
+        createMethods :: Var -> [ClassAttr] -> CM Builder
+        createMethods _ [] = return $ fromString ""
+        createMethods className ((ClassMethod pos fType (Ident f) args block):rest) = do
+            let methodIdent = "___" ++ className ++ "___" ++ f ++ "___"
+            -- args have 1 more thing - the class itself
+            code <- compTopDef (FnDef pos fType (Ident methodIdent) ((Ar pos (ClassT pos (Ident className)) (Ident "self")):args) block)
+            restCode <- createMethods className rest
+            return $ formatStrings [code, restCode]
+        createMethods className (_:rest) = createMethods className rest
             
 compTopDef (FnDef pos fType (Ident f) args block) = do    
     -- create end label
@@ -193,43 +211,19 @@ compStmt (Ass _ (EVar _ (Ident x)) e) = do
     -- value is in rdi
     memory <- get
     case Map.lookup x (varEnv memory) of
-        -- todo - now only rdi as i care about integers, add strings later
         Just (offset, _) -> do
             let move = movToStackFromReg offset "rax"
             return $ formatStrings [code, move]
-        -- Nothing -> do
-        --     case isVarFunctionArg x (funArgs memory) 1 of
-        --         Just (n, t) ->
-        --             let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
-        --             let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
-        --         Nothing -> do
-
-
--- compStmt (Incr _ (EVar _ (Ident x))) = do
---     let incr = fromString "   inc rax\n"
---     memory <- get
---     case Map.lookup x (varEnv memory) of
---         Just (offset, _) -> do
---             let getFromStack = movToRegFromStack "rax" offset
---             let move = movToStackFromReg offset "rax"
---             return $ formatStrings [getFromStack, incr, move]
---         Nothing -> do
---             case isVarFunctionArg x (funArgs memory) 1 of
---                 Just (n, t) -> do
---                     let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
---                     let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
---                     let backToStack = fromString $ "   mov " ++ addr ++ ", rax\n"
---                     return $ formatStrings [code, incr, backToStack]
---                 Nothing -> do
---                     memory <- get
---                     let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
---                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
---                     let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
---                     let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
---                     let changeActualValue = fromString $ "   mov [rdi], rax\n"
---                     -- todo - doesnot wokr
---                     return $ formatStrings [getInstanceArg, getClassVar, incr, changeActualValue]
-
+        Nothing -> do
+            memory <- get
+            let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
+            let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
+            let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
+            let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+            let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
+            let changeActualValue = fromString $ "   mov [rdi], rax\n"
+            -- todo - doesnot wokr
+            return $ formatStrings [getInstanceArg, getClassVar, code, getEffectiveAddressBack, changeActualValue]
 
 compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
     (codeIdent, _) <- compExp eIdent 
@@ -298,9 +292,10 @@ compStmt (Incr _ (EVar _ (Ident x))) = do
                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
                     let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
                     let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+                    let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
                     let changeActualValue = fromString $ "   mov [rdi], rax\n"
                     -- todo - doesnot wokr
-                    return $ formatStrings [getInstanceArg, getClassVar, incr, changeActualValue]
+                    return $ formatStrings [getInstanceArg, getClassVar, incr, getEffectiveAddressBack, changeActualValue]
 compStmt (Decr _ (EVar _ (Ident x))) = do
     let decr = fromString "   dec rax\n"
     memory <- get
@@ -322,9 +317,10 @@ compStmt (Decr _ (EVar _ (Ident x))) = do
                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
                     let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
                     let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+                    let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
                     let changeActualValue = fromString $ "   mov [rdi], rax\n"
                     -- todo - doesnot wokr
-                    return $ formatStrings [getInstanceArg, getClassVar, decr, changeActualValue]
+                    return $ formatStrings [getInstanceArg, getClassVar, decr, getEffectiveAddressBack, changeActualValue]
 
 compStmt (Cond _ cond stmt) = do
     (condCode, _) <- compExp cond
@@ -459,13 +455,9 @@ parseAttrs classIdent attrs = helper classIdent attrs Map.empty 0 Map.empty wher
 
 getFieldsFromSuperclasses :: CM ()
 getFieldsFromSuperclasses = do
-    -- iterate over superclasses and add fields
     memory <- get
-    -- go over each and update fields
     let baseClasses = Map.keys (classSuperclasses memory)
-
     helper baseClasses (classSuperclasses memory)
-
     where
         -- update fields for baseClasses with fields of their superClasses
         helper :: [Var] -> Map Var [Var] -> CM ()

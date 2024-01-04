@@ -1,15 +1,28 @@
-class X {
-  int x;
+class Animal {
+  string name;
 
-  void f(int a) {
-    a = 19;
+  void sayName() {
+    printString(name);
   }
 }
 
+class Dog extends Animal {
+  string breed;
+
+  void sayBreed() {
+    printString(breed);
+  }
+}
 
 int main() {
-  X instance = new X;
-  instance.f(1);
-  printInt(instance.x);
+  Animal animal = new Animal;
+  animal.name = "anim";
+  animal.sayName();
+  
+  Dog dog = new Dog;
+  dog.name = "doggo";
+  dog.breed = "owczarek";
+  dog.sayBreed();
+  dog.sayName();
   return 0;
 }

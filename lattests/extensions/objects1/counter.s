@@ -58,7 +58,8 @@ ___Counter___incr___:
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    inc rax
-   mov [rbp - 8], rax
+   mov rdi, [rbp - 8]
+   mov [rdi], rax
    jmp end2
 end2:
    mov rsp, rbp

@@ -142,7 +142,7 @@ compExp (EMethod pos e (Ident f) exprs) = do
     let stackCleanup = fromString $ "   add rsp, " ++ (show funArgsSize) ++ "\n"
     -- modify (\st -> st {funArgs = funArgsBefore})
     modify (\st -> st {currClass = "(null)"})
-    case Map.lookup methodIdent   funsTypes of
+    case Map.lookup methodIdent funsTypes of
         Just vt -> return (formatStrings [prepareCode, fCall, stackCleanup], vt)
 
 compExp (EClass _ (Ident className)) = do

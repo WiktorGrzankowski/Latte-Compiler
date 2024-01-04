@@ -1,0 +1,26 @@
+class X {
+  Y y;
+
+  void f() {
+    y.arr[4].z = "dupa";
+  }
+}
+
+class Y {
+  Z[] arr;
+}
+
+class Z {
+  string z;
+}
+
+
+int main() {
+  X instance = new X;
+  instance.y = new Y;
+  instance.y.arr = new Z[12];
+  instance.y.arr[4] = new Z;
+  instance.f();
+  printString(instance.y.arr[4].z);
+  return 0;
+}

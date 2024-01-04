@@ -34,6 +34,9 @@ process_lat_files() {
             # Output does not match
             echo -e "\e[31m$base_name: bad\e[0m"
             all_tests_passed=false
+        else
+            # Output matches, test passed
+            echo -e "\e[32m$base_name: OK\e[0m"
         fi
     done
 
