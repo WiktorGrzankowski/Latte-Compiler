@@ -149,7 +149,7 @@ printBool:
    mov rdi, rax
    call printString
    jmp end2
-   jne l1
+   jmp l1
 l0:
    mov rax, s5
    mov rdi, rax

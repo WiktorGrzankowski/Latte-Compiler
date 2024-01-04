@@ -205,7 +205,7 @@ printBool:
    mov rax, s4
    mov rdi, rax
    call printString
-   jne l9
+   jmp l9
 l8:
    mov rax, s5
    mov rdi, rax

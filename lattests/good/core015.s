@@ -53,7 +53,7 @@ ev:
    call ev
    add rsp, 0
    jmp end2
-   jne l1
+   jmp l1
 l0:
    mov rax, [rbp - 8]
    mov rdx, rax
@@ -68,7 +68,7 @@ l0:
    jne l2
    mov rax, 0
    jmp end2
-   jne l3
+   jmp l3
 l2:
    mov rax, 1
    jmp end2

@@ -37,7 +37,7 @@ main:
    jne l0
    mov rax, 1
    mov [rbp - 8], rax
-   jne l1
+   jmp l1
 l0:
    mov rax, 2
    mov [rbp - 8], rax

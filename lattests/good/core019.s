@@ -75,7 +75,7 @@ l1:
    mov rax, [rbp - 32]
    mov rdi, rax
    call printInt
-   jne l3
+   jmp l3
 l2:
    mov rax, s1
    mov rdi, rax

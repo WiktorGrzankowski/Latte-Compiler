@@ -342,7 +342,7 @@ compStmt (CondElse _ cond stmt1 stmt2) = do
     modify (\st -> st {labelId = labelName + 1})
     let checkAl = fromString "   cmp al, 1\n"
     let jumpToElseIfNotEq = fromString $ "   jne " ++ elseLabel ++ "\n"
-    let jumpToAfter = fromString $ "   jne " ++ afterLabel ++ "\n"
+    let jumpToAfter = fromString $ "   jmp " ++ afterLabel ++ "\n"
     stmt1Code <- compStmt stmt1
     stmt2Code <- compStmt stmt2
     let afterLabelCode = fromString $ afterLabel ++ ":\n"

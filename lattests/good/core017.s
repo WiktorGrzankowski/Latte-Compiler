@@ -59,7 +59,7 @@ l0:
    mov rdi, rax
    call printBool
    add rsp, 0
-   jne l3
+   jmp l3
 l2:
    mov rax, s1
    mov rdi, rax
@@ -216,7 +216,7 @@ printBool:
    mov rax, s2
    mov rdi, rax
    call printString
-   jne l9
+   jmp l9
 l8:
    mov rax, s3
    mov rdi, rax

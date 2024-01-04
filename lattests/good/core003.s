@@ -20,7 +20,7 @@ f:
    jne l0
    mov rax, 0
    jmp end1
-   jne l1
+   jmp l1
 l0:
 l1:
 end1:
@@ -34,7 +34,7 @@ g:
    mov al, 0
    cmp al, 1
    jne l2
-   jne l3
+   jmp l3
 l2:
    mov rax, 0
    jmp end2

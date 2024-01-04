@@ -160,7 +160,7 @@ rfac:
    jne l4
    mov rax, 1
    jmp end3
-   jne l5
+   jmp l5
 l4:
    mov rax, [rbp - 8]
    push rax
@@ -200,7 +200,7 @@ mfac:
    jne l6
    mov rax, 1
    jmp end4
-   jne l7
+   jmp l7
 l6:
    mov rax, [rbp - 8]
    push rax
@@ -253,7 +253,7 @@ nfac:
    pop rax
    imul rax, rdx
    jmp end5
-   jne l9
+   jmp l9
 l8:
    mov rax, 1
    jmp end5

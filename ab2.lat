@@ -1,24 +1,31 @@
-class Animal {
-  string name;
+class Node {
+  Node next;
 
-  void sayName() {
-    printString(name);
+  void setNext (Node n) { next = n; }
+}
+
+class IntQueue {
+  Node front;
+  Node rear;
+
+  boolean isEmpty () { return front == null; }
+
+  void insert (int x) {
+    Node last = new Node;
+    if (self.isEmpty()) {
+      printString("first");
+    }
+    else {
+      printString("other");
+    }
   }
 }
 
-class Dog extends Animal {
-  string breed;
+int main () {
+  IntQueue q = new IntQueue;
+  q.insert(12);
 
-  void sayBreed() {
-    printString(breed);
-  }
-}
-
-int main() {  
-  Dog dog = new Dog;
-  dog.name = "doggo";
-  dog.breed = "owczarek";
-  dog.sayBreed();
-  dog.sayName();
   return 0;
 }
+
+     

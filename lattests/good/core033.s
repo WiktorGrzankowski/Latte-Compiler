@@ -50,7 +50,7 @@ l1:
    mov rax, 1042
    mov rdi, rax
    call printInt
-   jne l4
+   jmp l4
 l3:
    mov rax, 2042
    mov rdi, rax

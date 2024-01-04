@@ -97,7 +97,7 @@ l1:
    jne l3
    mov rax, 7
    jmp end2
-   jne l4
+   jmp l4
 l3:
    mov rax, 42
    jmp end2

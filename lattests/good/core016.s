@@ -54,7 +54,7 @@ l1:
    call printInt
    mov rax, 0
    jmp end1
-   jne l3
+   jmp l3
 l2:
    mov rax, 1
    mov rdi, rax
