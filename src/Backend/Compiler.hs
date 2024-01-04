@@ -463,35 +463,32 @@ getFieldsFromSuperclasses = do
             -- Get all fields from superclasses recursively and update the current class fields
             let thisClassSupers = Map.findWithDefault [] className envSupers
             allSuperFields <- getAllSuperFields className (reverse (className:thisClassSupers))
-            modify (\st -> st {classEnv = Map.insert className allSuperFields (classEnv st)})
             -- updateClassFields className allSuperFields
             helper rest envSupers
+            modify (\st -> st {classEnv = Map.insert className allSuperFields (classEnv st)})
 
         getAllSuperFields :: Var -> [Var] -> CM (Map Var (Integer, TType))
-        getAllSuperFields baseName superNames = getAllSuperFieldsHelper baseName superNames Map.empty 0
+        getAllSuperFields baseName superNames = getAllSuperFieldsHelper baseName superNames Map.empty
             where
-                getAllSuperFieldsHelper :: Var -> [Var] -> (Map Var (Integer, TType)) -> Integer -> CM (Map Var (Integer, TType))
-                getAllSuperFieldsHelper _ [] accMap _ = return accMap
-                getAllSuperFieldsHelper baseName (superName:otherNames) accMap startingOffset = do
+                getAllSuperFieldsHelper :: Var -> [Var] -> (Map Var (Integer, TType)) -> CM (Map Var (Integer, TType))
+                getAllSuperFieldsHelper _ [] accMap = return accMap
+                getAllSuperFieldsHelper baseName (superName:otherNames) accMap  = do
                     memory <- get
                     let superClassFields = Map.findWithDefault Map.empty superName (classEnv memory) -- all fields
                     let nextOffsetSize = toInteger $ (Map.size accMap) * 8
-                    -- let nextOffsetSize = toInteger $ (Map.size superClassFields) * 8
-                    let newAccMap = mergeMaps accMap superClassFields startingOffset
-                    getAllSuperFieldsHelper baseName otherNames newAccMap (startingOffset + nextOffsetSize)
-                    -- getAllSuperFieldsHelper baseName otherNames newAccMap (startingOffset + nextOffsetSize)
-                mergeMaps :: Map.Map Var (Integer, TType) -> Map.Map Var (Integer, TType) -> Integer -> Map.Map Var (Integer, TType)
-                mergeMaps m1 m2 offset = Prelude.foldr insertIfNotPresent m1 (Map.toList m2)
-                    where
-                        insertIfNotPresent (key, (value, ttype)) accMap =
-                            if Map.member key accMap
-                                then accMap
-                                else Map.insert key (value + offset, ttype) accMap
-                -- mergeMaps :: Map Var (Integer, TType) -> Map Var (Integer, TType) -> Integer -> Map Var (Integer, TType)
-                -- mergeMaps m1 m2 offset = Map.foldrWithKey insertWithOffset m1 m2
-                --     where
-                --         insertWithOffset key (value, ttype) acc = Map.insert key (value + offset, ttype) acc
+                    let newAccMap = mergeMaps accMap superClassFields nextOffsetSize
+                    getAllSuperFieldsHelper baseName otherNames newAccMap 
 
+                mergeMaps :: Map.Map Var (Integer, TType) -> Map.Map Var (Integer, TType) -> Integer -> Map.Map Var (Integer, TType)
+                mergeMaps m1 m2 offset = Map.union m1 updatedM2
+                    where
+                        updatedM2 = Map.mapWithKey updateOffset m2
+
+                        updateOffset :: Var -> (Integer, TType) -> (Integer, TType)
+                        updateOffset key (value, ttype) =
+                            if Map.member key m1
+                            then (value, ttype)  
+                            else (value + offset, ttype)
 
 preprodInheritance :: [TopDef] -> CM ()
 preprodInheritance topDefs = modify (\st -> st {classSuperclasses = findAllSuperClasses (prepareDeps topDefs Map.empty)}) >> return ()
