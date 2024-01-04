@@ -219,7 +219,9 @@ compStmt (Ass _ (EVar _ (Ident x)) e) = do
             let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
             let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
             let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
-            let changeActualValue = fromString $ "   mov [rdi], rax\n"
+            -- todo - here get from [rdi + (attribut offset)]
+            let (xOffset, xT) = Map.findWithDefault (0, TNull) x thisClassFields
+            let changeActualValue = fromString $ "   mov [rdi + " ++ (show xOffset) ++ "], rax\n"
             -- todo - doesnot wokr
             return $ formatStrings [getInstanceArg, getClassVar, code, getEffectiveAddressBack, changeActualValue]
 

@@ -57,6 +57,8 @@ l0:
    jne l2
    mov al, 1
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    jmp l3
@@ -79,6 +81,8 @@ l3:
    push rax
    mov rax, 1
    mov rdi, rax
+   push rdi
+   pop rdi
    call dontCallMe
    add rsp, 0
    mov rcx, rax
@@ -86,6 +90,8 @@ l3:
    or rax, rcx
 l4:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 4
@@ -103,6 +109,8 @@ l4:
    push rax
    mov rax, 2
    mov rdi, rax
+   push rdi
+   pop rdi
    call dontCallMe
    add rsp, 0
    mov rcx, rax
@@ -110,6 +118,8 @@ l4:
    and rax, rcx
 l5:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 4
@@ -147,42 +157,60 @@ l7:
    and rax, rcx
 l6:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov al, 0
    mov rdi, rax
+   push rdi
    mov al, 0
    mov rsi, rax
+   pop rdi
    call implies
    add rsp, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov al, 0
    mov rdi, rax
+   push rdi
    mov al, 1
    mov rsi, rax
+   pop rdi
    call implies
    add rsp, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov al, 1
    mov rdi, rax
+   push rdi
    mov al, 0
    mov rsi, rax
+   pop rdi
    call implies
    add rsp, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov al, 1
    mov rdi, rax
+   push rdi
    mov al, 1
    mov rsi, rax
+   pop rdi
    call implies
    add rsp, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 0

@@ -248,10 +248,14 @@ l5:
 l6:
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call shiftLeft
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call doubleArray
    add rsp, 0
    mov [rbp - 24], rax
@@ -293,8 +297,10 @@ forEach9end:
    add rsp, 8
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 24]
    mov rsi, rax
+   pop rdi
    call scalProd
    add rsp, 0
    mov rdi, rax

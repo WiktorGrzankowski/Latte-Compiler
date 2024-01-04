@@ -21,7 +21,7 @@ Node_$_setElem:
    mov rax, [rax + 0]
    mov rax, [rbp - 16]
    mov rdi, [rbp - 8]
-   mov [rdi], rax
+   mov [rdi + 0], rax
 end1:
    mov rsp, rbp
    pop rbp
@@ -36,7 +36,7 @@ Node_$_setNext:
    mov rax, [rax + 8]
    mov rax, [rbp - 16]
    mov rdi, [rbp - 8]
-   mov [rdi], rax
+   mov [rdi + 8], rax
 end2:
    mov rsp, rbp
    pop rbp
@@ -80,22 +80,26 @@ Stack_$_push:
    mov [rbp - 24], rax
    mov rax, [rbp - 24]
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 16]
    mov rsi, rax
+   pop rdi
    call Node_$_setElem
    add rsp, 0
    mov rax, [rbp - 24]
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    mov rsi, rax
+   pop rdi
    call Node_$_setNext
    add rsp, 0
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    mov rax, [rbp - 24]
    mov rdi, [rbp - 8]
-   mov [rdi], rax
+   mov [rdi + 0], rax
 end5:
    mov rsp, rbp
    pop rbp
@@ -128,6 +132,8 @@ Stack_$_top:
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Node_$_getElem
    add rsp, 0
    jmp end7
@@ -145,10 +151,12 @@ Stack_$_pop:
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Node_$_getNext
    add rsp, 0
    mov rdi, [rbp - 8]
-   mov [rdi], rax
+   mov [rdi + 0], rax
 end8:
    mov rsp, rbp
    pop rbp
@@ -176,8 +184,10 @@ l0:
    jne l1
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 16]
    mov rsi, rax
+   pop rdi
    call Stack_$_push
    add rsp, 0
    mov rax, [rbp - 16]
@@ -188,6 +198,8 @@ l1:
 l2:
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Stack_$_isEmpty
    add rsp, 0
    xor rax, 1
@@ -195,12 +207,16 @@ l2:
    jne l3
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Stack_$_top
    add rsp, 0
    mov rdi, rax
    call printInt
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Stack_$_pop
    add rsp, 0
    jmp l2

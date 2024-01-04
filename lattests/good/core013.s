@@ -26,6 +26,8 @@ main:
    mov rax, 1
    neg rax
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 0
@@ -33,6 +35,8 @@ main:
    push rax
    mov rax, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -40,11 +44,15 @@ main:
    and rax, rcx
 l0:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 2
    neg rax
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 0
@@ -52,6 +60,8 @@ l0:
    push rax
    mov rax, 1
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -59,10 +69,14 @@ l0:
    and rax, rcx
 l1:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 3
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 0
@@ -71,6 +85,8 @@ l1:
    mov rax, 5
    neg rax
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -78,10 +94,14 @@ l1:
    and rax, rcx
 l2:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 234234
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 0
@@ -89,6 +109,8 @@ l2:
    push rax
    mov rax, 21321
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -96,6 +118,8 @@ l2:
    and rax, rcx
 l3:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, s2
@@ -104,6 +128,8 @@ l3:
    mov rax, 1
    neg rax
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 1
@@ -111,6 +137,8 @@ l3:
    push rax
    mov rax, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -118,11 +146,15 @@ l3:
    or rax, rcx
 l4:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 2
    neg rax
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 1
@@ -130,6 +162,8 @@ l4:
    push rax
    mov rax, 1
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -137,10 +171,14 @@ l4:
    or rax, rcx
 l5:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 3
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 1
@@ -149,6 +187,8 @@ l5:
    mov rax, 5
    neg rax
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -156,10 +196,14 @@ l5:
    or rax, rcx
 l6:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 234234
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    cmp al, 1
@@ -167,6 +211,8 @@ l6:
    push rax
    mov rax, 21321
    mov rdi, rax
+   push rdi
+   pop rdi
    call test
    add rsp, 0
    mov rcx, rax
@@ -174,6 +220,8 @@ l6:
    or rax, rcx
 l7:
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, s3
@@ -181,10 +229,14 @@ l7:
    call printString
    mov al, 1
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov al, 0
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, 0

@@ -90,6 +90,8 @@ main:
    cmp rdx, rcx
    setg al
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, [rbp - 8]
@@ -114,6 +116,8 @@ main:
    cmp rdx, rcx
    setle al
    mov rdi, rax
+   push rdi
+   pop rdi
    call printBool
    add rsp, 0
    mov rax, s1

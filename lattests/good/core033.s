@@ -68,8 +68,10 @@ main:
    sub rsp, 0
    mov al, 0
    mov rdi, rax
+   push rdi
    mov al, 1
    mov rsi, rax
+   pop rdi
    call funkcja_ifbooltrudny
    add rsp, 0
    mov rax, 0

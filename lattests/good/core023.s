@@ -45,6 +45,7 @@ main:
    mov [rbp - 112], rax
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 16]
    mov rsi, rax
    mov rax, [rbp - 24]
@@ -72,6 +73,7 @@ main:
    mov [rsp + 48], rax
    mov rax, [rbp - 112]
    mov [rsp + 56], rax
+   pop rdi
    call foo
    add rsp, 64
    jmp end1

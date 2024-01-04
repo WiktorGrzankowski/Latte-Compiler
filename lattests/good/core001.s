@@ -20,24 +20,32 @@ main:
    sub rsp, 32
    mov rax, 10
    mov rdi, rax
+   push rdi
+   pop rdi
    call fac
    add rsp, 0
    mov rdi, rax
    call printInt
    mov rax, 10
    mov rdi, rax
+   push rdi
+   pop rdi
    call rfac
    add rsp, 0
    mov rdi, rax
    call printInt
    mov rax, 10
    mov rdi, rax
+   push rdi
+   pop rdi
    call mfac
    add rsp, 0
    mov rdi, rax
    call printInt
    mov rax, 10
    mov rdi, rax
+   push rdi
+   pop rdi
    call ifac
    add rsp, 0
    mov rdi, rax
@@ -77,8 +85,10 @@ l1:
    call printInt
    mov rax, s1
    mov rdi, rax
+   push rdi
    mov rax, 60
    mov rsi, rax
+   pop rdi
    call repStr
    add rsp, 0
    mov rdi, rax
@@ -171,6 +181,8 @@ l4:
    pop rax
    sub rax, rdx
    mov rdi, rax
+   push rdi
+   pop rdi
    call rfac
    add rsp, 0
    mov rdx, rax
@@ -211,6 +223,8 @@ l6:
    pop rax
    sub rax, rdx
    mov rdi, rax
+   push rdi
+   pop rdi
    call nfac
    add rsp, 0
    mov rdx, rax
@@ -245,6 +259,8 @@ nfac:
    pop rax
    sub rax, rdx
    mov rdi, rax
+   push rdi
+   pop rdi
    call mfac
    add rsp, 0
    push rax
@@ -269,8 +285,10 @@ ifac:
    mov [rbp - 8], rdi
    mov rax, 1
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 8]
    mov rsi, rax
+   pop rdi
    call ifac2f
    add rsp, 0
    jmp end6
@@ -330,8 +348,10 @@ l11:
    mov [rbp - 24], rax
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 24]
    mov rsi, rax
+   pop rdi
    call ifac2f
    add rsp, 0
    push rax
@@ -342,8 +362,10 @@ l11:
    pop rax
    add rax, rdx
    mov rdi, rax
+   push rdi
    mov rax, [rbp - 16]
    mov rsi, rax
+   pop rdi
    call ifac2f
    add rsp, 0
    mov rdx, rax

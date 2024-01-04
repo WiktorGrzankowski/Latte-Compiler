@@ -17,6 +17,8 @@ main:
    sub rsp, 0
    mov rax, 5
    mov rdi, rax
+   push rdi
+   pop rdi
    call fac
    add rsp, 0
    mov rdi, rax

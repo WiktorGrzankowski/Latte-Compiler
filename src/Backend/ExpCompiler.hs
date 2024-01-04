@@ -14,8 +14,21 @@ isVarFunctionArg v ((x, t):xs) n = case v == x of
     False -> isVarFunctionArg v xs (n+1)
 
 prepareArguments :: [Expr] -> [(String, Type)] -> Integer -> CM (Builder, Int)
-prepareArguments [] _ _ = return (fromString "", 0)
+-- prepareArguments [] _ _ = return (fromString "", 0)
+prepareArguments [] _ argNr 
+    | argNr == 1 = return (fromString "", 0)
+    | otherwise = return (popReg "rdi", 0)
+
 prepareArguments (e:rest) ((_, t):otherArgs) argNr
+    | argNr == 1 = do
+        -- all the same, but push rdi to save it
+        -- eval e and save it to correct register
+        (eCode, _) <- compExp e 
+        -- it's in rax - always, also for functions calls
+        let move = movToRegFromReg (argRegister argNr (typeSize t)) (raxPartBytes (typeSize t))
+
+        (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
+        return (formatStrings [eCode, move, pushReg "rdi", restCode], restSize)
     | argNr <= 6 = do
         -- eval e and save it to correct register
         (eCode, _) <- compExp e 

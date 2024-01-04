@@ -26,18 +26,26 @@ main:
    mov [rbp - 8], rax
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Counter_$_incr
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Counter_$_incr
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Counter_$_incr
    add rsp, 0
    mov rax, [rbp - 8]
    mov rdi, rax
+   push rdi
+   pop rdi
    call Counter_$_value
    add rsp, 0
    mov [rbp - 16], rax

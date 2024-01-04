@@ -17,6 +17,8 @@ main:
    sub rsp, 0
    mov rax, 17
    mov rdi, rax
+   push rdi
+   pop rdi
    call ev
    add rsp, 0
    mov rdi, rax
@@ -50,6 +52,8 @@ ev:
    pop rax
    sub rax, rdx
    mov rdi, rax
+   push rdi
+   pop rdi
    call ev
    add rsp, 0
    jmp end2

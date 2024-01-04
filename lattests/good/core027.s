@@ -19,6 +19,8 @@ main:
    sub rsp, 0
    mov rax, s1
    mov rdi, rax
+   push rdi
+   pop rdi
    call f
    add rsp, 0
    mov rax, 0
