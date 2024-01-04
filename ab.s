@@ -11,18 +11,23 @@ section .text
    extern allocateArray
    extern allocateClass
    global main
-___C___f___:
+___X___f___:
    push rbp
    mov rbp, rsp
    sub rsp, 16
    mov [rbp - 8], rdi
-   mov [rbp - 16], rsi
-   mov rax, [rbp - 16]
-   mov rdi, rax
-   call printInt
-   mov rax, [rbp - 0]
-   mov rdi, rax
-   call printInt
+   mov rax, [rbp - 8]
+   mov rax, [rax + 0]
+   inc rax
+   mov [rdi], rax
+   mov rax, [rbp - 8]
+   mov rax, [rax + 0]
+   inc rax
+   mov [rdi], rax
+   mov rax, [rbp - 8]
+   mov rax, [rax + 0]
+   dec rax
+   mov [rdi], rax
 end1:
    mov rsp, rbp
    pop rbp
@@ -40,10 +45,12 @@ main:
    mov [rbp - 8], rax
    mov rax, [rbp - 8]
    mov rdi, rax
-   mov rax, 120
-   mov rsi, rax
-   call ___C___f___
+   call ___X___f___
    add rsp, 0
+   mov rax, [rbp - 8]
+   mov rax, [rax + 0]
+   mov rdi, rax
+   call printInt
    mov rax, 0
    jmp end2
 end2:

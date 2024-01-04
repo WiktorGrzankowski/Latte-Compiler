@@ -82,6 +82,22 @@ compExp (EVar _ (Ident x)) = do
                 Just (n, t) -> do
                     let code = fromString $ "   mov " ++ "rax" ++ ", [rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]\n"
                     return (code, tTypeFromType t)
+                Nothing -> do
+                    -- it has to be a class attribute
+                    -- check first argument (rdi - class instance)
+                    -- and get the variable
+                    memory <- get
+                    -- how to know in which class to look for the variables?
+                    -- it has to be stored in program memory
+                    -- knowing the variable name, we know the offset - that's good
+                    -- but we know the offset only after we know the classname
+                    let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
+                    let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
+                    -- let movPointerToRax = fromString $ "   mov rax, [rbp]\n"
+                    -- dont use rdi, but stack
+                    let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
+                    let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+                    return (formatStrings [getInstanceArg, getClassVar], varType)
 
 compExp (SReadInt _) = do
     return (fromString "   call readInt\n", TInt)
@@ -115,6 +131,7 @@ compExp (EMethod pos e (Ident f) exprs) = do
     funs <- gets classFunEnv
     let thisClassMethods = Map.findWithDefault Map.empty className funs
     funsTypes <- gets funEnvTypes
+    modify (\st -> st {currClass = className})
 
     let args = Map.findWithDefault [] methodIdent thisClassMethods
     let actualArgs = (("self", (ClassT pos (Ident className))):args)
@@ -124,6 +141,7 @@ compExp (EMethod pos e (Ident f) exprs) = do
     -- let stackCleanup = fromString $ "   add rsp, " ++ show ((max ((length exprs - 6) * 8) 0)) ++ "\n"
     let stackCleanup = fromString $ "   add rsp, " ++ (show funArgsSize) ++ "\n"
     -- modify (\st -> st {funArgs = funArgsBefore})
+    modify (\st -> st {currClass = "(null)"})
     case Map.lookup methodIdent   funsTypes of
         Just vt -> return (formatStrings [prepareCode, fCall, stackCleanup], vt)
 

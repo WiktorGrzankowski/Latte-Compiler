@@ -43,8 +43,9 @@ data StmtState = StmtState { varEnv :: Env,
                          stackSize :: Integer, 
                          funArgs :: [(String, Type)], 
                          hardcodedStrs :: Map Var String, 
-                         labelId :: Integer, 
-                         funId :: Integer
+                         labelId :: Integer,
+                         funId :: Integer,
+                         currClass :: Var
                         }
 
 type CM a = ExceptT CompilerError (StateT StmtState IO) a

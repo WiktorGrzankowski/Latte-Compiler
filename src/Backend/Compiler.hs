@@ -11,7 +11,7 @@ import Latte.SkelLatte
 import Latte.PrintLatte
 import Latte.ParLatte
 import Data.Text.Lazy.Builder
-import Backend.ExpCompiler (compExp)
+import Backend.ExpCompiler (compExp, isVarFunctionArg)
 import Backend.ItemCompiler (compAllItems, compItemForEachCase)
 import Backend.Core
 import Frontend.TypeChecker (findAllSuperClasses, prepareDeps)
@@ -27,7 +27,8 @@ emptyState = StmtState { varEnv = Map.empty,
                          funArgs = [], 
                          hardcodedStrs = Map.fromList[("", "s0")], 
                          labelId = 0, 
-                         funId = 0
+                         funId = 0,
+                         currClass = "(null)"
                         }
 
 parseHardcodedString :: (String, String) -> Builder
@@ -67,9 +68,9 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty x (classEnv memory)
     let thisClassMethods = Map.findWithDefault Map.empty x (classFunEnv memory)
-    modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods})
+    -- modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods, currClass = x})
+    modify (\st -> st { currClass = x})
     code <- createMethods x attrs
-    modify (\st -> st {varEnv = varEnv memory, funEnv = funEnv memory})
     return code
     where
         createMethods :: Var -> [ClassAttr] -> CM Builder
@@ -251,7 +252,22 @@ compStmt (Incr _ (EVar _ (Ident x))) = do
             let getFromStack = movToRegFromStack "rax" offset
             let move = movToStackFromReg offset "rax"
             return $ formatStrings [getFromStack, incr, move]
-
+        Nothing -> do
+            case isVarFunctionArg x (funArgs memory) 1 of
+                Just (n, t) -> do
+                    let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
+                    let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
+                    let backToStack = fromString $ "   mov " ++ addr ++ ", rax\n"
+                    return $ formatStrings [code, incr, backToStack]
+                Nothing -> do
+                    memory <- get
+                    let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
+                    let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
+                    let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
+                    let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+                    let changeActualValue = fromString $ "   mov [rdi], rax\n"
+                    -- todo - doesnot wokr
+                    return $ formatStrings [getInstanceArg, getClassVar, incr, changeActualValue]
 compStmt (Decr _ (EVar _ (Ident x))) = do
     let decr = fromString "   dec rax\n"
     memory <- get
@@ -260,7 +276,22 @@ compStmt (Decr _ (EVar _ (Ident x))) = do
             let getFromStack = movToRegFromStack "rax" offset
             let move = movToStackFromReg offset "rax"
             return $ formatStrings [getFromStack, decr, move]
-
+        Nothing -> do
+            case isVarFunctionArg x (funArgs memory) 1 of
+                Just (n, t) -> do
+                    let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
+                    let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
+                    let backToStack = fromString $ "   mov " ++ addr ++ ", rax\n"
+                    return $ formatStrings [code, decr, backToStack]
+                Nothing -> do
+                    memory <- get
+                    let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
+                    let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
+                    let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
+                    let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+                    let changeActualValue = fromString $ "   mov [rdi], rax\n"
+                    -- todo - doesnot wokr
+                    return $ formatStrings [getInstanceArg, getClassVar, decr, changeActualValue]
 
 compStmt (Cond _ cond stmt) = do
     (condCode, _) <- compExp cond

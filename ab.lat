@@ -1,13 +1,14 @@
-class C {
+class X {
   int x;
-  void f(int a) {
-    printInt(a);
-    printInt(x);
+
+  void f() {
+    x = 19;
   }
 }
 
 int main() {
-  C c = new C;
-  c.f(120);
+  X instance = new X;
+  instance.f();
+  printInt(instance.x);
   return 0;
 }
