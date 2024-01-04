@@ -32,6 +32,7 @@ checkAll :: [TopDef] -> TypeCheckerMonad ()
 checkAll topDefs = do
     let inheritances = prepareDeps topDefs Map.empty
     checkCircularInheritance inheritances
+    mapM_ preProdTopDefsWithoutMethods topDefs
     mapM_ preProdTopDefs topDefs
     let superclasses = findAllSuperClasses inheritances
     modify (\st -> st { classSuperclasses = superclasses})
@@ -89,9 +90,22 @@ checkCircularInheritance inheritances = do
                         else []
                     else findCycle classMap (Set.insert className visited) (className : path) superClass
 
-
-preProdTopDefs :: TopDef -> TypeCheckerMonad ()
-preProdTopDefs (FnDef pos fType (Ident f) args block) = do
+preProdTopDefsWithoutMethods :: TopDef -> TypeCheckerMonad ()
+preProdTopDefsWithoutMethods (ClassDef pos (Ident x) attrs) = do
+    memory <- get
+    case Map.lookup x (classEnv memory) of
+        Nothing -> do
+            modify (\st -> st {classEnv = Map.insert x Map.empty (classEnv st), classFunEnv = Map.insert x Map.empty (classFunEnv st)})
+            return ()
+        Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
+preProdTopDefsWithoutMethods (ClassDefE pos (Ident x) (Ident parent) attrs) = do
+    memory <- get
+    case Map.lookup x (classEnv memory) of
+        Nothing -> do
+            modify (\st -> st {classEnv = Map.insert x Map.empty (classEnv st), classFunEnv = Map.insert x Map.empty (classFunEnv st)})
+            return ()
+        Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
+preProdTopDefsWithoutMethods (FnDef pos fType (Ident f) args block) = do
     memory <- get
     case Map.lookup f (funEnv memory) of
         Nothing -> do
@@ -101,21 +115,16 @@ preProdTopDefs (FnDef pos fType (Ident f) args block) = do
             modify (\st -> st { funEnv = newFunEnv })
         Just _ -> throwError $ CompilerError { text = "Function " ++ (show f) ++ " is already defined.", position = Nothing }
 
+preProdTopDefs :: TopDef -> TypeCheckerMonad ()
+preProdTopDefs (FnDef pos fType (Ident f) args block) = return ()
+
 preProdTopDefs (ClassDef pos (Ident x) attrs) = do
-    memory <- get
-    case Map.lookup x (classEnv memory) of
-        Nothing -> do
-            modify (\st -> st { classEnv = Map.insert x Map.empty (classEnv st), classFunEnv = Map.insert x Map.empty (classFunEnv st) })
-            (localEnv, localMethods) <- parseAttrs attrs
-            modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
-        Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
+    (localEnv, localMethods) <- parseAttrs attrs
+    modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
 
 preProdTopDefs (ClassDefE pos (Ident x) (Ident parent) attrs) = do
     (localEnv, localMethods) <- parseAttrs attrs
-    memory <- get
-    case Map.lookup x (classEnv memory) of
-        Nothing -> modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
-        Just _ -> throwError $ CompilerError { text = "Class " ++ (show x) ++ " is already defined.", position = Nothing }
+    modify (\st -> st { classEnv = Map.insert x localEnv (classEnv st), classFunEnv = Map.insert x localMethods (classFunEnv st) })
 
 
 parseAttrs :: [ClassAttr] -> TypeCheckerMonad (Env, EnvFun)
