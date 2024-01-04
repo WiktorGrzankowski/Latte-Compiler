@@ -124,6 +124,11 @@ getMethodNameFromIdent ident =
         (_:method:_) -> method 
         _ -> ""  
 
+getClassNameFromIdent :: String -> String
+getClassNameFromIdent ident =
+    case splitOn "_$_" ident of
+        (className:_) -> className
+        _ -> ""
 
 -- it will always find it as type check was successful
 getMethodIdentInSuperclassses :: Var -> String -> [Var] -> CM String
@@ -136,3 +141,17 @@ getMethodIdentInSuperclassses className methodName (super:others) = do
     case Map.lookup nameForSuper superFunEnv of
         Nothing -> getMethodIdentInSuperclassses className methodName others
         Just _ -> return nameForSuper
+
+getArgsFromSuperclassMethods :: Var -> String -> CM [(String, Type)]
+getArgsFromSuperclassMethods className methodName = do
+    -- first get the class that has this method
+    allSuperclasses <- gets classSuperclasses
+    let thisClassSupers = Map.findWithDefault [] className allSuperclasses
+    -- get the correct ident
+    methodIdent <- getMethodIdentInSuperclassses className methodName thisClassSupers
+    -- get class owning the method from ident
+    let classOwnerName = getClassNameFromIdent methodIdent
+    -- no get args
+    funs <- gets classFunEnv
+    let ownerClassMethods = Map.findWithDefault Map.empty classOwnerName funs
+    return $ Map.findWithDefault [] methodIdent ownerClassMethods
