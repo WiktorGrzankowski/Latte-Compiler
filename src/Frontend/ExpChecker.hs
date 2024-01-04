@@ -150,7 +150,12 @@ checkExp (EMethod pos e (Ident f) exprs) = do
             case classMethods of
                 Just methodEnv -> do
                     case Map.lookup f methodEnv of
-                        Just (FunT {funType = fType}) -> return fType
+                        Just (FunT {funType = fType, argTypes = aTypes}) -> do
+                            -- check if args match
+                            argsMatch <- checkFunctionArgs aTypes (reverse exprs)
+                            case argsMatch of
+                                True -> return fType
+                                False -> throwError $ CompilerError { text = "Method " ++ (show f) ++ " called with incorrect arguments.", position = pos}
                         -- check if maybe it belongs to superclass
                         Nothing -> do
                             maybeFromSuper <- getMethodFromSuperClass f className

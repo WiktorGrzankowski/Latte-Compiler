@@ -16,18 +16,9 @@ ___X___f___:
    mov rbp, rsp
    sub rsp, 16
    mov [rbp - 8], rdi
-   mov rax, [rbp - 8]
-   mov rax, [rax + 0]
-   inc rax
-   mov [rdi], rax
-   mov rax, [rbp - 8]
-   mov rax, [rax + 0]
-   inc rax
-   mov [rdi], rax
-   mov rax, [rbp - 8]
-   mov rax, [rax + 0]
-   dec rax
-   mov [rdi], rax
+   mov [rbp - 16], rsi
+   mov rax, 19
+   mov [rbp - 16], rax
 end1:
    mov rsp, rbp
    pop rbp
@@ -45,6 +36,8 @@ main:
    mov [rbp - 8], rax
    mov rax, [rbp - 8]
    mov rdi, rax
+   mov rax, 1
+   mov rsi, rax
    call ___X___f___
    add rsp, 0
    mov rax, [rbp - 8]

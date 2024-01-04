@@ -1,14 +1,15 @@
 class X {
   int x;
 
-  void f() {
-    x = 19;
+  void f(int a) {
+    a = 19;
   }
 }
 
+
 int main() {
   X instance = new X;
-  instance.f();
+  instance.f(1);
   printInt(instance.x);
   return 0;
 }

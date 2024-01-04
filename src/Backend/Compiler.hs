@@ -197,6 +197,39 @@ compStmt (Ass _ (EVar _ (Ident x)) e) = do
         Just (offset, _) -> do
             let move = movToStackFromReg offset "rax"
             return $ formatStrings [code, move]
+        -- Nothing -> do
+        --     case isVarFunctionArg x (funArgs memory) 1 of
+        --         Just (n, t) ->
+        --             let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
+        --             let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
+        --         Nothing -> do
+
+
+-- compStmt (Incr _ (EVar _ (Ident x))) = do
+--     let incr = fromString "   inc rax\n"
+--     memory <- get
+--     case Map.lookup x (varEnv memory) of
+--         Just (offset, _) -> do
+--             let getFromStack = movToRegFromStack "rax" offset
+--             let move = movToStackFromReg offset "rax"
+--             return $ formatStrings [getFromStack, incr, move]
+--         Nothing -> do
+--             case isVarFunctionArg x (funArgs memory) 1 of
+--                 Just (n, t) -> do
+--                     let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
+--                     let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
+--                     let backToStack = fromString $ "   mov " ++ addr ++ ", rax\n"
+--                     return $ formatStrings [code, incr, backToStack]
+--                 Nothing -> do
+--                     memory <- get
+--                     let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
+--                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
+--                     let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
+--                     let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+--                     let changeActualValue = fromString $ "   mov [rdi], rax\n"
+--                     -- todo - doesnot wokr
+--                     return $ formatStrings [getInstanceArg, getClassVar, incr, changeActualValue]
+
 
 compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
     (codeIdent, _) <- compExp eIdent 
