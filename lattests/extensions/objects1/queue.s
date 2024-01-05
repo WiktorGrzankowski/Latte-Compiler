@@ -11,6 +11,7 @@ section .text
    extern allocateArray
    extern allocateClass
    global main
+
 Node_$_setElem:
    push rbp
    mov rbp, rsp

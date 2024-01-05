@@ -59,12 +59,39 @@ instance Show CompilerError where
 formatStrings :: [Builder] -> Builder
 formatStrings = Prelude.foldr (<>) mempty
 
+noCurrClass :: String
+noCurrClass = "(null)"
+
+raxR :: String
+raxR = "rax"
+
+alR :: String
+alR = "al"
+
+rdiR :: String
+rdiR = "rdi"
+
+rsiR :: String
+rsiR = "rsi"
+
+rdxR :: String
+rdxR = "rdx"
+
+rcxR :: String
+rcxR = "rcx"
+
+r12R :: String
+r12R = "r12"
+
+
+jmpTo :: String -> Builder
+jmpTo l = fromString $ "   jmp " ++ l ++ "\n"
+
 typeSize :: Type -> Int
 typeSize t = 8
 
 popReg :: String -> Builder
 popReg reg = fromString $ "   pop " ++ reg ++ "\n"
-
 
 pushReg :: String -> Builder
 pushReg reg = fromString $ "   push " ++ reg ++ "\n"
@@ -78,8 +105,8 @@ xorRegs reg1 reg2 = fromString $ "   xor " ++ reg1 ++ ", " ++ reg2 ++ "\n"
 andRegs :: String -> String -> Builder
 andRegs reg1 reg2 = fromString $ "   and " ++ reg1 ++ ", " ++ reg2 ++ "\n"
 
-compareRegs :: String -> String -> Builder
-compareRegs reg1 reg2 = fromString $ "   cmp " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+compareCall :: String -> String -> Builder
+compareCall reg1 reg2 = fromString $ "   cmp " ++ reg1 ++ ", " ++ reg2 ++ "\n"
 
 movToRegString :: String -> String -> Builder
 movToRegString reg str = fromString $ "   mov " ++ reg ++ ", " ++ str ++ "\n"

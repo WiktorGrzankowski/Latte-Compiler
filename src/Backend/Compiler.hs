@@ -28,7 +28,7 @@ emptyState = StmtState { varEnv = Map.empty,
                          hardcodedStrs = Map.fromList[("", "s0")], 
                          labelId = 0, 
                          funId = 0,
-                         currClass = "(null)"
+                         currClass = noCurrClass
                         }
 
 parseHardcodedString :: (String, String) -> Builder
@@ -53,7 +53,7 @@ textSectionHeader = formatStrings [
     fromString "   extern error\n",
     fromString "   extern allocateArray\n",
     fromString "   extern allocateClass\n",
-    fromString "   global main\n"
+    fromString "   global main\n\n"
     ]
 
 emptyStack :: Integer -> Builder
@@ -68,17 +68,16 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty x (classEnv memory)
     let thisClassMethods = Map.findWithDefault Map.empty x (classFunEnv memory)
-    -- modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods, currClass = x})
     modify (\st -> st { currClass = x})
     code <- createMethods x attrs
-    modify (\st -> st {currClass = "(null)"})
+    modify (\st -> st {currClass = noCurrClass})
     return code
     where
         createMethods :: Var -> [ClassAttr] -> CM Builder
         createMethods _ [] = return $ fromString ""
         createMethods className ((ClassMethod pos fType (Ident f) args block):rest) = do
             let methodIdent = getMethodIdent className f
-            -- args have 1 more thing - the class itself
+            -- args have 1 more thing - the class instance
             code <- compTopDef (FnDef pos fType (Ident methodIdent) ((Ar pos (ClassT pos (Ident className)) (Ident "self")):args) block)
             restCode <- createMethods className rest
             return $ formatStrings [code, restCode]
@@ -88,10 +87,9 @@ compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = do
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty x (classEnv memory)
     let thisClassMethods = Map.findWithDefault Map.empty x (classFunEnv memory)
-    -- modify (\st -> st {varEnv = thisClassFields, funEnv = thisClassMethods, currClass = x})
     modify (\st -> st { currClass = x})
     code <- createMethods x attrs
-    modify (\st -> st {currClass = "(null)"})
+    modify (\st -> st {currClass = noCurrClass})
     return code
     where
         createMethods :: Var -> [ClassAttr] -> CM Builder
@@ -105,33 +103,24 @@ compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = do
         createMethods className (_:rest) = createMethods className rest
             
 compTopDef (FnDef pos fType (Ident f) args block) = do    
-    -- create end label
-
     labelName <- gets funId
     modify (\st -> st {funId = labelName + 1})
     let endLabelCode = fromString $ "end" ++ (show (labelName + 1)) ++ ":\n"
-    -- first check how many assignments there are and remove from stack
     funVarsSize <- countVarsInBlock block
     let funLabel = fromString $ f ++ ":\n"
     let prologue = fromString "   push rbp\n   mov rbp, rsp\n"
     let epilogue = fromString "   pop rbp\n"
-
     funs <- gets funEnv
     let argsSaved = Map.findWithDefault [] f funs
-    -- all function variables from registers to stack
     (rewriteArgsToStack, argsSize) <- regArgsToStack (toInteger $ length args) 1 args
-    -- let argsReWritten = (toInteger $ length args)
-
     funArgsBefore <- gets funArgs
     varEnvBefore <- gets varEnv
     modify (\st -> st { funArgs = argsSaved, stackSize = toInteger argsSize})
     blockCode <- compBlock block
     stackAtEndOfFunction <- gets stackSize
-    -- let removeFromStack = emptyStack stackAtEndOfFunction
     let removeFromStack = fromString "   mov rsp, rbp\n"
     modify (\st -> st { funArgs = funArgsBefore, varEnv = varEnvBefore})
     let stackPadding = (funVarsSize + (toInteger argsSize)) `mod` 16
-
     return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize) + stackPadding), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
 
 
@@ -143,7 +132,6 @@ regArgsToStack n i ((Ar _ t (Ident x)):rest)
     | i > 6 = return (fromString "", 0)
     | otherwise = do
         let offset = i* (toInteger $ typeSize t)
-        -- TODO !!!!!
         let code = fromString ("   mov [rbp - " ++ (show offset) ++ "], " ++ (argRegister i (typeSize t)) ++ "\n")
         (restCode, restSize) <- regArgsToStack n (i+1) rest
         varEnvBefore <- gets varEnv
@@ -178,18 +166,16 @@ compStmt :: Stmt -> CM Builder
 compStmt (Ret _ e) = do
     (code, _) <- compExp e
     myFunId <- gets funId
-    let jmpToEnd = "   jmp end" ++ (show myFunId) ++ "\n"
-    return $ formatStrings [code, fromString jmpToEnd]
+    let jmpToEnd = jmpTo ("end" ++ (show myFunId))
+    return $ formatStrings [code, jmpToEnd]
 
 compStmt (Empty _) = return $ fromString ""
 compStmt (BStmt _ b) = compBlock b   
 
--- compStmt (VRet _) = return $ fromString ""
 compStmt (VRet _) = do
-    -- jump to my end
     myFunId <- gets funId
-    let jmpToEnd = "   jmp end" ++ (show myFunId) ++ "\n"
-    return $ fromString jmpToEnd
+    let jmpToEnd = jmpTo ("end" ++ (show myFunId))
+    return jmpToEnd
     
 compStmt (SExp _ e) = do
     (code, _) <- compExp e
@@ -198,23 +184,21 @@ compStmt (Decl _ dType items) = compAllItems dType items
 
 compStmt (SPrintInt _ e) = do
     (code, _) <- compExp e
-    let move = movToRegFromReg "rdi" "rax"
+    let move = movToRegFromReg rdiR raxR
     return $ formatStrings [code, move, fromString "   call printInt\n"]
 compStmt (SPrintStr _ e) = do
     (code, _) <- compExp e
-    let move = movToRegFromReg "rdi" "rax"
+    let move = movToRegFromReg rdiR raxR
     return $ formatStrings [code, move, fromString "   call printString\n"]
 
 compStmt (Ass _ (EVar _ (Ident x)) e) = do
     (code, eType) <- compExp e 
-    -- value is in rdi
     memory <- get
-    -- update type - could be needed for virtual methods
     let (currentVarOff, currentVarT) = Map.findWithDefault (0, TNull) x (varEnv memory)
     modify (\st -> st {varEnv = Map.insert x (currentVarOff, eType) (varEnv st)})
     case Map.lookup x (varEnv memory) of
         Just (offset, _) -> do
-            let move = movToStackFromReg offset "rax"
+            let move = movToStackFromReg offset raxR
             return $ formatStrings [code, move]
         Nothing -> do
             memory <- get
@@ -231,44 +215,35 @@ compStmt (Ass _ (EVar _ (Ident x)) e) = do
 
 compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
     (codeIdent, _) <- compExp eIdent 
-    let saveRax = pushReg "rax"
+    let saveRax = pushReg raxR
     (codeInd, _) <- compExp eInd 
-    let movIndToRdi = movToRegFromReg "rdi" "rax"
-    let saveRdi = pushReg "rdi"
+    let movIndToRdi = movToRegFromReg rdiR raxR
+    let saveRdi = pushReg rdiR
     (codeVal, _) <- compExp eVal 
-    let movValToRsi = movToRegFromReg "rsi" "rax"
-    let retrieveRdi = popReg "rdi"
-    let retrieveRax = popReg "rax"
-    -- something like
-    -- mov [ident + 8  * Ind], val
+    let movValToRsi = movToRegFromReg rsiR raxR
+    let retrieveRdi = popReg rdiR
+    let retrieveRax = popReg raxR
     let movValToArr = fromString $ "   mov [rax + 8 + " ++ "rdi * 8], rsi\n"
     return $ formatStrings [codeIdent, saveRax, codeInd, movIndToRdi, saveRax, codeVal, movValToRsi, retrieveRdi, retrieveRax, movValToArr]
 
 compStmt (Ass pos (EAttr pos2 (EVarArr pos3 eIdent eInd) (Ident field)) eVal) = do
-    -- first get the array
     (codeGetArr, (TArr (TClass className))) <- compExp (EVarArr pos3 eIdent eInd)
-    -- now pointer to n-th element in the array is in rax
-    let saveRax = pushReg "rax"
+    let saveRax = pushReg raxR
     (codeVal, _) <- compExp eVal 
-    let movValToRdi = movToRegFromReg "rdi" "rax"
-    let retrieveRax = popReg "rax"
-    -- class pointer is in rax
-    -- value is in rdi
+    let movValToRdi = movToRegFromReg rdiR raxR
+    let retrieveRax = popReg raxR
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
     let (offset, _) = Map.findWithDefault (0, TNull) field thisClassFields
     let movValToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], rdi\n"
     return $ formatStrings [codeGetArr, saveRax, codeVal, movValToRdi, retrieveRax, movValToPointer]
-    -- then get the fiels
 
 compStmt (Ass pos (EAttr pos2 e (Ident field)) eVal) = do
     (codeClassEval, (TClass className)) <- compExp e
-    let saveRax = pushReg "rax"
+    let saveRax = pushReg raxR
     (codeVal, _) <- compExp eVal 
-    let movValToRdi = movToRegFromReg "rdi" "rax"
-    let retrieveRax = popReg "rax"
-    -- class pointer is in rax
-    -- value is in rdi
+    let movValToRdi = movToRegFromReg rdiR raxR
+    let retrieveRax = popReg raxR
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
     let (offset, _) = Map.findWithDefault (0, TNull) field thisClassFields
@@ -280,14 +255,14 @@ compStmt (Incr _ (EVar _ (Ident x))) = do
     memory <- get
     case Map.lookup x (varEnv memory) of
         Just (offset, _) -> do
-            let getFromStack = movToRegFromStack "rax" offset
-            let move = movToStackFromReg offset "rax"
+            let getFromStack = movToRegFromStack raxR offset
+            let move = movToStackFromReg offset raxR
             return $ formatStrings [getFromStack, incr, move]
         Nothing -> do
             case isVarFunctionArg x (funArgs memory) 1 of
                 Just (n, t) -> do
                     let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
-                    let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
+                    let code = fromString $ "   mov " ++ raxR ++ ", " ++ addr ++ "\n"
                     let backToStack = fromString $ "   mov " ++ addr ++ ", rax\n"
                     return $ formatStrings [code, incr, backToStack]
                 Nothing -> do
@@ -298,21 +273,21 @@ compStmt (Incr _ (EVar _ (Ident x))) = do
                     let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
                     let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
                     let changeActualValue = fromString $ "   mov [rdi], rax\n"
-                    -- todo - doesnot wokr
                     return $ formatStrings [getInstanceArg, getClassVar, incr, getEffectiveAddressBack, changeActualValue]
+    
 compStmt (Decr _ (EVar _ (Ident x))) = do
     let decr = fromString "   dec rax\n"
     memory <- get
     case Map.lookup x (varEnv memory) of
         Just (offset, _) -> do
-            let getFromStack = movToRegFromStack "rax" offset
-            let move = movToStackFromReg offset "rax"
+            let getFromStack = movToRegFromStack raxR offset
+            let move = movToStackFromReg offset raxR
             return $ formatStrings [getFromStack, decr, move]
         Nothing -> do
             case isVarFunctionArg x (funArgs memory) 1 of
                 Just (n, t) -> do
                     let addr = "[rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]"
-                    let code = fromString $ "   mov " ++ "rax" ++ ", " ++ addr ++ "\n"
+                    let code = fromString $ "   mov " ++ raxR ++ ", " ++ addr ++ "\n"
                     let backToStack = fromString $ "   mov " ++ addr ++ ", rax\n"
                     return $ formatStrings [code, decr, backToStack]
                 Nothing -> do
@@ -381,7 +356,7 @@ compStmt (ForEach pos t (Ident x) e stmt) = do
     redefineX <- compItemForEachCase t (NoInit pos (Ident x))
     let movLenToR12 = fromString "   mov r12, [rax]\n"
     let movRaxToFirstElem = fromString "   add rax, 8\n"
-    let movArrToR11 = movToRegFromReg "r13" "rax"
+    let movArrToR11 = movToRegFromReg "r13" raxR
 
     let labelNr = labelId memory
     modify (\st -> st {labelId = labelNr + 1})

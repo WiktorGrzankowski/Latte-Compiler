@@ -11,6 +11,7 @@ section .text
    extern allocateArray
    extern allocateClass
    global main
+
 Point2_$_move:
    push rbp
    mov rbp, rsp

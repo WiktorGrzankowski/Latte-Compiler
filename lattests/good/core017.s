@@ -14,6 +14,7 @@ section .text
    extern allocateArray
    extern allocateClass
    global main
+
 main:
    push rbp
    mov rbp, rsp
