@@ -1,8 +1,8 @@
 section .data
-   s0 db '', 0
-   s1 db 'apa', 0
-   s3 db 'false', 0
-   s2 db 'true', 0
+   s0 db "", 0
+   s1 db "apa", 0
+   s3 db "false", 0
+   s2 db "true", 0
 
 section .text
    extern printInt

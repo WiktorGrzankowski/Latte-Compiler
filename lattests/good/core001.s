@@ -1,8 +1,8 @@
 section .data
-   s0 db '', 0
-   s3 db '/* world', 0
-   s1 db '=', 0
-   s2 db 'hello */', 0
+   s0 db "", 0
+   s3 db "/* world", 0
+   s1 db "=", 0
+   s2 db "hello */", 0
 
 section .text
    extern printInt

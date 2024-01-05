@@ -181,6 +181,7 @@ compStmt (Ret _ e) = do
     let jmpToEnd = "   jmp end" ++ (show myFunId) ++ "\n"
     return $ formatStrings [code, fromString jmpToEnd]
 
+compStmt (Empty _) = return $ fromString ""
 compStmt (BStmt _ b) = compBlock b   
 
 -- compStmt (VRet _) = return $ fromString ""
@@ -205,9 +206,12 @@ compStmt (SPrintStr _ e) = do
     return $ formatStrings [code, move, fromString "   call printString\n"]
 
 compStmt (Ass _ (EVar _ (Ident x)) e) = do
-    (code, _) <- compExp e 
+    (code, eType) <- compExp e 
     -- value is in rdi
     memory <- get
+    -- update type - could be needed for virtual methods
+    let (currentVarOff, currentVarT) = Map.findWithDefault (0, TNull) x (varEnv memory)
+    modify (\st -> st {varEnv = Map.insert x (currentVarOff, eType) (varEnv st)})
     case Map.lookup x (varEnv memory) of
         Just (offset, _) -> do
             let move = movToStackFromReg offset "rax"

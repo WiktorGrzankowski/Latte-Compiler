@@ -1,7 +1,7 @@
 section .data
-   s0 db '', 0
-   s2 db 'NOOO', 0
-   s1 db 'yes', 0
+   s0 db "", 0
+   s2 db "NOOO", 0
+   s1 db "yes", 0
 
 section .text
    extern printInt

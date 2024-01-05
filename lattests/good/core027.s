@@ -1,7 +1,7 @@
 section .data
-   s0 db '', 0
-   s1 db 'bad', 0
-   s2 db 'good', 0
+   s0 db "", 0
+   s1 db "bad", 0
+   s2 db "good", 0
 
 section .text
    extern printInt

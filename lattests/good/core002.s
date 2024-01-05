@@ -1,6 +1,6 @@
 section .data
-   s0 db '', 0
-   s1 db 'foo', 0
+   s0 db "", 0
+   s1 db "foo", 0
 
 section .text
    extern printInt

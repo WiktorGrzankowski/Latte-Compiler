@@ -40,11 +40,11 @@ compAllItems t ((NoInit pos (Ident x)) : rest) = do
     return $ formatStrings [raxToDefault, varToDefault, restCode]
     
 compAllItems t ((Init _ (Ident x) e) : rest) = do
-    (eCode, _) <- compExp e
+    (eCode, eType) <- compExp e
     memory <- get
     let currentOffset = stackSize memory
     let newOffset = currentOffset + 8
-    modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, tTypeFromType t) (varEnv memory)})
+    modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, eType) (varEnv memory)})
     let varToRax = movToStackFromReg newOffset "rax"
     restCode <- compAllItems t rest
     return $ formatStrings [eCode, varToRax, restCode]

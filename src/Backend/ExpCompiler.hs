@@ -57,6 +57,9 @@ prepareArguments (e:rest) ((_, t):otherArgs) argNr
 
 
 compExp :: Expr -> CM (Builder, TType)
+-- compExp (ENull _) = do
+--     memory <- get
+--     throwError $ CompilerError { text = "\nclassEnv=\n" ++ (show (classEnv memory)) ++ "\nclassFunEnv:\n" ++ (show (classFunEnv memory)), position = Nothing}
 compExp (ENull _) = return (movToRegLiteralInt "rax" 0, TNull)
 compExp (ESelf _) = do
     className <- gets currClass
@@ -139,7 +142,7 @@ compExp (EApp pos (Ident f) exprs) = do
 compExp (EMethod pos e (Ident f) exprs) = do
     (codeGetClass, (TClass className)) <- compExp e
     allSuperclasses <- gets classSuperclasses
-    methodIdent <- getMethodIdentInSuperclassses className f (Map.findWithDefault [] className allSuperclasses)
+    methodIdent <- getMethodIdentInSuperclassses className f (className:(Map.findWithDefault [] className allSuperclasses))
     let actualExprs = (e:exprs)
     funArgsBefore <- gets funArgs
     funs <- gets classFunEnv

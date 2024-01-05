@@ -1,5 +1,5 @@
 section .data
-   s0 db '', 0
+   s0 db "", 0
 
 section .text
    extern printInt

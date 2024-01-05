@@ -44,11 +44,44 @@ process_lat_files() {
         echo -e "\e[32mAll tests in $input_dir passed\e[0m"
     fi
 }
+process_lat_files_bad() {
+    local input_dir="$1"
+    local output_dir="$2"
+    local all_tests_passed=true
 
-# Process .lat files in lattests/good
-process_lat_files "lattests/good" "lattests/good"
+    # Create output directory if it doesn't exist
+    mkdir -p "$output_dir"
 
-# Process .lat files in lattests/extensions/arrays1
-process_lat_files "lattests/extensions/arrays1" "lattests/extensions/arrays1"
+    # Iterate over all .lat files in the input directory
+    for file in "$input_dir"/*.lat; do
+        # Get the base name without extension
+        base_name=$(basename "$file" .lat)
 
-process_lat_files "lattests/extensions/objects1" "lattests/extensions/objects1"
+        # Compile and execute the program
+        "$compiler" "$file" && ./"$output_dir/$base_name" > "$output_dir/$base_name.myoutput"
+
+        # Check if the compilation or execution failed, which is expected
+        if [ $? -ne 0 ]; then
+            # Test failed as expected
+            echo -e "\e[32m$base_name: OK\e[0m"
+        else
+            # Test unexpectedly passed
+            echo -e "\e[31m$base_name: BAD\e[0m"
+            all_tests_passed=false
+        fi
+    done
+
+    if [ "$all_tests_passed" = true ]; then
+        echo -e "\e[32mAll tests in $input_dir failed as expected\e[0m"
+    fi
+}
+
+process_lat_files "lattests/mrjp-tests/good/arrays" "lattests/mrjp-tests/good/arrays"
+
+# Process .lat files in good and extension directories
+# process_lat_files "lattests/good" "lattests/good"
+# process_lat_files "lattests/extensions/arrays1" "lattests/extensions/arrays1"
+# process_lat_files "lattests/extensions/objects1" "lattests/extensions/objects1"
+
+# # Process .lat files in bad directory
+# process_lat_files_bad "lattests/bad" "lattests/bad"

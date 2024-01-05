@@ -1,10 +1,10 @@
 section .data
-   s0 db '', 0
-   s2 db ' ', 0
-   s3 db 'concatenation', 0
-   s5 db 'false', 0
-   s1 db 'string', 0
-   s4 db 'true', 0
+   s0 db "", 0
+   s2 db " ", 0
+   s3 db "concatenation", 0
+   s5 db "false", 0
+   s1 db "string", 0
+   s4 db "true", 0
 
 section .text
    extern printInt
