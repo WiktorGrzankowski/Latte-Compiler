@@ -251,7 +251,7 @@ printBool:
    sub rsp, 16
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
-   xor rax, 1
+   xor al, 1
    cmp al, 1
    jne l8
    mov rax, s4

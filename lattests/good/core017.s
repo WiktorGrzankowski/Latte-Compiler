@@ -138,7 +138,7 @@ l5:
    mov rdx, rax
    push rdx
    mov al, 0
-   xor rax, 1
+   xor al, 1
    mov rcx, rax
    pop rdx
    xor rax, rax
@@ -262,7 +262,7 @@ implies:
    mov [rbp - 8], rdi
    mov [rbp - 16], rsi
    mov rax, [rbp - 8]
-   xor rax, 1
+   xor al, 1
    cmp al, 1
    je l10
    push rax

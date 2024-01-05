@@ -69,11 +69,35 @@ popReg reg = fromString $ "   pop " ++ reg ++ "\n"
 pushReg :: String -> Builder
 pushReg reg = fromString $ "   push " ++ reg ++ "\n"
 
+divideReg :: String -> Builder
+divideReg reg = fromString $ "   idiv " ++ reg ++ "\n"
+
+xorRegs :: String -> String -> Builder
+xorRegs reg1 reg2 = fromString $ "   xor " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+andRegs :: String -> String -> Builder
+andRegs reg1 reg2 = fromString $ "   and " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+compareRegs :: String -> String -> Builder
+compareRegs reg1 reg2 = fromString $ "   cmp " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+movToRegString :: String -> String -> Builder
+movToRegString reg str = fromString $ "   mov " ++ reg ++ ", " ++ str ++ "\n"
+
+movToRegDefaultString :: String -> Builder
+movToRegDefaultString reg = fromString $ "   mov " ++ reg ++ ", s0\n"
+
+movToRegFromRegVal :: String -> String -> Builder
+movToRegFromRegVal reg1 reg2 = fromString $ "   mov " ++ reg1 ++ ", [" ++ reg2 ++ "]\n"
+
 movToRegFromReg :: String -> String -> Builder
 movToRegFromReg reg1 reg2 = fromString $ "   mov " ++ reg1 ++ ", " ++ reg2 ++ "\n"
 
 movToRegFromStack :: String -> Integer -> Builder
 movToRegFromStack reg offset = fromString $ "   mov " ++ reg ++ ", [rbp - " ++ (show offset) ++ "]\n" 
+
+movToRegSelfArg :: String -> Builder
+movToRegSelfArg reg = fromString $ "   mov " ++ reg ++ ", [rbp - 8]\n"
 
 movToRegLiteralInt :: String -> Integer -> Builder
 movToRegLiteralInt reg i = fromString $ "   mov " ++ reg ++ ", " ++ (show i) ++ "\n"

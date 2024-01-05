@@ -18,7 +18,7 @@ funkcja_ifbooltrudny:
    mov [rbp - 8], rdi
    mov [rbp - 16], rsi
    mov rax, [rbp - 8]
-   xor rax, 1
+   xor al, 1
    cmp al, 0
    je l0
    push rax
@@ -35,12 +35,12 @@ l0:
    je l2
    push rax
    mov rax, [rbp - 16]
-   xor rax, 1
+   xor al, 1
    mov rcx, rax
    pop rax
    or rax, rcx
 l2:
-   xor rax, 1
+   xor al, 1
    mov rcx, rax
    pop rax
    or rax, rcx

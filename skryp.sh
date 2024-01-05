@@ -16,6 +16,7 @@ process_lat_files() {
     for file in "$input_dir"/*.lat; do
         # Get the base name without extension
         base_name=$(basename "$file" .lat)
+        rm "$input_dir/$base_name.myoutput"
 
         # Check if an input file exists
         input_file="$input_dir/$base_name.input"
@@ -78,8 +79,8 @@ process_lat_files_bad() {
 
 
 # Process .lat files in good and extension directories
-# process_lat_files "lattests/good" "lattests/good"
-# process_lat_files "lattests/extensions/arrays1" "lattests/extensions/arrays1"
+process_lat_files "lattests/good" "lattests/good"
+process_lat_files "lattests/extensions/arrays1" "lattests/extensions/arrays1"
 process_lat_files "lattests/extensions/objects1" "lattests/extensions/objects1"
 
 # Process .lat files in bad directory

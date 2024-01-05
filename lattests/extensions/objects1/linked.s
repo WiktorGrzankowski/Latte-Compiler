@@ -202,7 +202,7 @@ l2:
    pop rdi
    call Stack_$_isEmpty
    add rsp, 0
-   xor rax, 1
+   xor al, 1
    cmp al, 1
    jne l3
    mov rax, [rbp - 8]
