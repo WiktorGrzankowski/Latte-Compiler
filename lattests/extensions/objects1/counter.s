@@ -68,7 +68,7 @@ Counter_$_incr:
    mov rax, [rax + 0]
    inc rax
    mov rdi, [rbp - 8]
-   mov [rdi], rax
+   mov [rdi + 0], rax
    jmp end2
 end2:
    mov rsp, rbp

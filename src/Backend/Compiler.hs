@@ -269,10 +269,10 @@ compStmt (Incr _ (EVar _ (Ident x))) = do
                     memory <- get
                     let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
-                    let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
-                    let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
-                    let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
-                    let changeActualValue = fromString $ "   mov [rdi], rax\n"
+                    let getInstanceArg = movToRegSelfArg raxR
+                    let getClassVar = movToRegFromReg raxR (regValAtOffset raxR (show varOffset))
+                    let getEffectiveAddressBack =  movToRegSelfArg rdiR
+                    let changeActualValue = movToRegFromReg (regValAtOffset rdiR (show 0)) raxR
                     return $ formatStrings [getInstanceArg, getClassVar, incr, getEffectiveAddressBack, changeActualValue]
     
 compStmt (Decr _ (EVar _ (Ident x))) = do
@@ -347,8 +347,6 @@ compStmt (While _ cond stmt) = do
     return $ formatStrings [labelCondCode, condCode, checkAl, jumpIfNotEq, stmtCode, jmpLabelCond, labelCode]
 
 compStmt (ForEach pos t (Ident x) e stmt) = do
-    -- now loop over elements and each time apply stmt with x mapped to [rax]
-    -- compAllItems t ((NoInit pos (Ident x)) : rest) 
     (eCode, _) <- compExp e 
     memory <- get
     redefineX <- compItemForEachCase t (NoInit pos (Ident x))
@@ -371,14 +369,8 @@ compStmt (ForEach pos t (Ident x) e stmt) = do
 
     stmtCode <- compStmt stmt
 
-
-
     modify (\st -> st {stackSize = stackSize memory, varEnv = varEnv memory})
-
     return $ formatStrings[eCode, movLenToR12, movRaxToFirstElem, movArrToR11, spaceForIterator, checkIfEmptyArr, gotoEndIfEmptyArr, labelCode, redefineX, stmtCode, loopAgain, labelEndCode, deletSpaceForIterator ]
-
-
-
 
 getExpLocation :: Expr -> CM Builder
 getExpLocation (ELitInt _ i) = return $ fromString $ show i ++ "\n"
