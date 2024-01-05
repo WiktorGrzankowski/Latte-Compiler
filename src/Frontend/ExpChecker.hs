@@ -14,7 +14,9 @@ import Latte.PrintLatte
 import Latte.ParLatte
 
 checkExp :: Expr -> TypeCheckerMonad VType
-checkExp (ELitInt _ _) = return VInt
+checkExp (ELitInt pos i) 
+    | i > 9223372036854775807 = throwError $ CompilerError { text = "Numeric literal too large for 64-bit integer.", position = pos}
+    | otherwise = return VInt
 checkExp (EString _ _) = return VStr 
 checkExp (ELitTrue _) = return VBool
 checkExp (ELitFalse _) = return VBool

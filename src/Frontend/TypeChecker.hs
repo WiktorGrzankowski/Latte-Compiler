@@ -180,7 +180,19 @@ checkTopDef (ClassDef pos (Ident className) attrs) = do
     modify (\st -> st {currClass = "(null)"})
 
 checkClassHelper (ClassDef pos (Ident className) []) = return ()
-checkClassHelper (ClassDef pos (Ident className) ((ClassField _ t (Ident x)):rest)) = checkTopDef (ClassDef pos (Ident className) rest)
+checkClassHelper (ClassDef pos (Ident className) ((ClassField _ t (Ident x)):rest)) = do
+    -- check if that class exists
+    case vTypeFromType t of
+        (VClass className) -> checkIfClassExists className
+        (VArr (VClass className)) -> checkIfClassExists className
+        _ -> checkTopDef (ClassDef pos (Ident className) rest)
+    where
+        checkIfClassExists cName = do
+            memory <- get
+            case Map.lookup cName (classEnv memory) of
+                Nothing ->  throwError $ CompilerError { text = "Class " ++ (show cName) ++ " is not defined.", position = pos }
+                _ -> checkTopDef (ClassDef pos (Ident cName) rest)
+
 checkClassHelper (ClassDef pos (Ident className) ((ClassMethod _ fType (Ident f) args block):rest)) = do
     -- go all over method bodies and check if they are set correctly
     -- bodies should know all functions, attribute variables and method arguments

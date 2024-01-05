@@ -1,13 +1,4 @@
-void f(int[] arr) {
-  arr[1] = 12;
-  arr[0] = 999;
-}
-
 int main() {
-  int[] a = new int[3];
-  f(a);
-  for (int x : a) {
-    printInt(x);
-  }
+  int[][]  a= new int [12][12];
   return 0;
 }
