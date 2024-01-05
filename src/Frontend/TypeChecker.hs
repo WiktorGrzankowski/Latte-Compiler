@@ -180,17 +180,18 @@ checkTopDef (ClassDef pos (Ident className) attrs) = do
     modify (\st -> st {currClass = "(null)"})
 
 checkClassHelper (ClassDef pos (Ident className) []) = return ()
+
 checkClassHelper (ClassDef pos (Ident className) ((ClassField _ t (Ident x)):rest)) = do
     -- check if that class exists
     case vTypeFromType t of
-        (VClass className) -> checkIfClassExists className
-        (VArr (VClass className)) -> checkIfClassExists className
+        (VClass classFieldName) -> checkIfClassExists className classFieldName
+        (VArr (VClass classFieldName)) -> checkIfClassExists className classFieldName
         _ -> checkTopDef (ClassDef pos (Ident className) rest)
     where
-        checkIfClassExists cName = do
+        checkIfClassExists cName cFieldName = do
             memory <- get
-            case Map.lookup cName (classEnv memory) of
-                Nothing ->  throwError $ CompilerError { text = "Class " ++ (show cName) ++ " is not defined.", position = pos }
+            case Map.lookup cFieldName (classEnv memory) of
+                Nothing ->  throwError $ CompilerError { text = "Class " ++ (show cFieldName) ++ " is not defined.", position = pos }
                 _ -> checkTopDef (ClassDef pos (Ident cName) rest)
 
 checkClassHelper (ClassDef pos (Ident className) ((ClassMethod _ fType (Ident f) args block):rest)) = do

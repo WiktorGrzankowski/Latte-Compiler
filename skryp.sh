@@ -76,12 +76,11 @@ process_lat_files_bad() {
     fi
 }
 
-process_lat_files "lattests/mrjp-tests/good/arrays" "lattests/mrjp-tests/good/arrays"
 
 # Process .lat files in good and extension directories
 # process_lat_files "lattests/good" "lattests/good"
 # process_lat_files "lattests/extensions/arrays1" "lattests/extensions/arrays1"
-# process_lat_files "lattests/extensions/objects1" "lattests/extensions/objects1"
+process_lat_files "lattests/extensions/objects1" "lattests/extensions/objects1"
 
-# # Process .lat files in bad directory
+# Process .lat files in bad directory
 # process_lat_files_bad "lattests/bad" "lattests/bad"

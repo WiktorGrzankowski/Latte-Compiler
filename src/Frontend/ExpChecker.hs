@@ -63,11 +63,6 @@ checkExp (EVar pos (Ident x)) = do
             case maybeFromSuper of
                 Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos}
                 Just vt -> return vt
--- checkExp (EVar pos (Ident x)) = do
---     memory <- get
---     case Map.lookup x (varEnv memory) of
---         Nothing -> throwError $ CompilerError { text = "Variable " ++ (show x) ++ " is not in the scope.", position = pos}
---         Just t -> return t
 
 checkExp (EVarArr pos e eInd) = do
     eType <- checkExp e 

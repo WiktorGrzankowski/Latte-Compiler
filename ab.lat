@@ -1,4 +1,11 @@
-int main() {
-  int[][]  a= new int [12][12];
+class A
+{
+  B[] field;
+  
+}
+
+int main()
+{
+  A a = new A;
   return 0;
 }
