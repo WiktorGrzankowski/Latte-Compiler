@@ -23,8 +23,8 @@ compAllItems (Str pos) ((NoInit _ (Ident x)) : rest) = do
     let currentOffset = stackSize memory
 
     let newOffset = currentOffset + 8
-    let raxToDefault = movToRegDefaultString "rax"
-    let varToDefault = movToStackFromReg newOffset "rax"
+    let raxToDefault = movToRegDefaultString raxR
+    let varToDefault = movToStackFromReg newOffset raxR
 
     modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, TStr) (varEnv memory)})
     restCode <- compAllItems (Str pos) rest
@@ -35,8 +35,8 @@ compAllItems t ((NoInit pos (Ident x)) : rest) = do
     let currentOffset = stackSize memory
     let newOffset = currentOffset + 8
 
-    let raxToDefault = movToRegLiteralInt "rax" 0
-    let varToDefault = movToStackFromReg newOffset "rax"
+    let raxToDefault = movToRegLiteralInt raxR 0
+    let varToDefault = movToStackFromReg newOffset raxR
 
     modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, tTypeFromType t) (varEnv memory)})
     restCode <- compAllItems t rest
@@ -48,7 +48,7 @@ compAllItems t ((Init _ (Ident x) e) : rest) = do
     let currentOffset = stackSize memory
     let newOffset = currentOffset + 8
 
-    let varToRax = movToStackFromReg newOffset "rax"
+    let varToRax = movToStackFromReg newOffset raxR
 
     modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, eType) (varEnv memory)})
     restCode <- compAllItems t rest
@@ -59,8 +59,8 @@ compItemForEachCase t (NoInit pos (Ident x)) = do
     memory <- get
     let currentOffset = stackSize memory
     let newOffset = currentOffset + 8 
-    let getValueOfR13 = movToRegFromRegVal "r14" "r13"
-    let varToRax = movToStackFromReg newOffset "r14"
+    let getValueOfR13 = movToRegFromRegVal r14R r13R
+    let varToRax = movToStackFromReg newOffset r14R
   
     modify (\st -> st {stackSize = newOffset, varEnv = Map.insert x (newOffset, tTypeFromType t) (varEnv memory)})
     return $ formatStrings[getValueOfR13, varToRax]

@@ -25,7 +25,7 @@ doubleArray:
    mov rsi, 8
    add rdi, 1
    call allocateArray
-   mov [rax], r12
+   mov [rax + 0], r12
    pop r12
    mov [rbp - 16], rax
    mov rax, 0
@@ -214,7 +214,7 @@ main:
    mov rsi, 8
    add rdi, 1
    call allocateArray
-   mov [rax], r12
+   mov [rax + 0], r12
    pop r12
    mov [rbp - 8], rax
    mov rax, 0

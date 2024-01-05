@@ -109,7 +109,7 @@ compTopDef (FnDef pos fType (Ident f) args block) = do
     funVarsSize <- countVarsInBlock block
     let funLabel = fromString $ f ++ ":\n"
     let prologue = fromString "   push rbp\n   mov rbp, rsp\n"
-    let epilogue = fromString "   pop rbp\n"
+    let epilogue = popReg rbpR
     funs <- gets funEnv
     let argsSaved = Map.findWithDefault [] f funs
     (rewriteArgsToStack, argsSize) <- regArgsToStack (toInteger $ length args) 1 args
@@ -118,7 +118,7 @@ compTopDef (FnDef pos fType (Ident f) args block) = do
     modify (\st -> st { funArgs = argsSaved, stackSize = toInteger argsSize})
     blockCode <- compBlock block
     stackAtEndOfFunction <- gets stackSize
-    let removeFromStack = fromString "   mov rsp, rbp\n"
+    let removeFromStack = movToRegFromReg rspR rbpR
     modify (\st -> st { funArgs = funArgsBefore, varEnv = varEnvBefore})
     let stackPadding = (funVarsSize + (toInteger argsSize)) `mod` 16
     return $ formatStrings[funLabel, prologue, allocateStack (funVarsSize + (toInteger argsSize) + stackPadding), rewriteArgsToStack, blockCode, endLabelCode, removeFromStack, epilogue, fromString "   ret\n"]
@@ -185,11 +185,11 @@ compStmt (Decl _ dType items) = compAllItems dType items
 compStmt (SPrintInt _ e) = do
     (code, _) <- compExp e
     let move = movToRegFromReg rdiR raxR
-    return $ formatStrings [code, move, fromString "   call printInt\n"]
+    return $ formatStrings [code, move, callFun "printInt"]
 compStmt (SPrintStr _ e) = do
     (code, _) <- compExp e
     let move = movToRegFromReg rdiR raxR
-    return $ formatStrings [code, move, fromString "   call printString\n"]
+    return $ formatStrings [code, move, callFun "printString"]
 
 compStmt (Ass _ (EVar _ (Ident x)) e) = do
     (code, eType) <- compExp e 
@@ -330,8 +330,6 @@ compStmt (CondElse _ cond stmt1 stmt2) = do
     let elseLabelCode = fromString $ elseLabel ++ ":\n"
     return $ formatStrings [condCode, checkAl, jumpToElseIfNotEq, stmt1Code, jumpToAfter, elseLabelCode, stmt2Code, afterLabelCode]
 
--- same as if, but after stmtCode, go back to before label
--- [__initLabel__, condCode, checkAl, jumpIfNotEq, stmtCode, jmp __initLabel__, labelCode]
 compStmt (While _ cond stmt) = do
     (condCode, _) <- compExp cond 
     labelName <- gets labelId

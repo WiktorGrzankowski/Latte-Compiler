@@ -68,6 +68,12 @@ raxR = "rax"
 alR :: String
 alR = "al"
 
+rspR :: String
+rspR = "rsp"
+
+rbpR :: String
+rbpR = "rbp"
+
 rdiR :: String
 rdiR = "rdi"
 
@@ -83,6 +89,17 @@ rcxR = "rcx"
 r12R :: String
 r12R = "r12"
 
+r13R :: String
+r13R = "r13"
+
+r14R :: String
+r14R = "r14"
+
+regValAtOffset :: String -> String -> String
+regValAtOffset reg offset = "[" ++ reg ++ " + " ++ offset ++ "]"
+
+cqoCall :: Builder
+cqoCall = fromString "   cqo\n"
 
 jmpTo :: String -> Builder
 jmpTo l = fromString $ "   jmp " ++ l ++ "\n"
@@ -99,8 +116,17 @@ pushReg reg = fromString $ "   push " ++ reg ++ "\n"
 divideReg :: String -> Builder
 divideReg reg = fromString $ "   idiv " ++ reg ++ "\n"
 
-xorRegs :: String -> String -> Builder
-xorRegs reg1 reg2 = fromString $ "   xor " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+orRegs :: String -> String -> Builder
+orRegs reg1 reg2 = fromString $ "   or " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+xorCall :: String -> String -> Builder
+xorCall reg1 reg2 = fromString $ "   xor " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+addCall :: String -> String -> Builder
+addCall reg1 reg2 = fromString $ "   add " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+negReg :: String -> Builder
+negReg reg = fromString $ "   neg " ++ reg ++ "\n"
 
 andRegs :: String -> String -> Builder
 andRegs reg1 reg2 = fromString $ "   and " ++ reg1 ++ ", " ++ reg2 ++ "\n"
@@ -138,6 +164,9 @@ movToStackFromReg offset reg = fromString $ "   mov [rbp - " ++ (show offset) ++
 areBothStrings :: TType -> TType -> Bool
 areBothStrings TStr TStr = True
 areBothStrings _ _ = False
+
+callFun :: String -> Builder
+callFun f = fromString $ "   call " ++ f ++ "\n"
 
 
 raxPartBytes :: Int -> String
