@@ -1,5 +1,29 @@
-int main() {
-  int[] x = new int[5];
-  printInt(x[2]);
-  return 0;
+void f(int x, int y) {
+    printInt(x+y);
 }
+
+int f2(int x, int y) {
+    return x + y;
+}
+
+int main() {
+    f(f2(10, 10), 1);
+    f(1, f2(10, 10));
+    return 0;
+}
+/*
+void f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8) {
+  printInt(a1);
+  printInt(a2);
+  printInt(a3);
+  printInt(a4);
+  printInt(a5);
+  printInt(a6);
+  printInt(a7);
+  printInt(a8);
+}
+
+int main() {
+  f(1,2,3,4,5,6,70,80);
+  return 0;
+}*/

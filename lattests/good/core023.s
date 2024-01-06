@@ -44,37 +44,42 @@ main:
    mov [rbp - 104], rax
    mov rax, 2
    mov [rbp - 112], rax
+   sub rsp, 112
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   mov rax, [rbp - 16]
-   mov rsi, rax
-   mov rax, [rbp - 24]
-   mov rdx, rax
-   mov rax, [rbp - 32]
-   mov rcx, rax
-   mov rax, [rbp - 40]
-   mov r8, rax
-   mov rax, [rbp - 48]
-   mov r9, rax
-   sub rsp, 64
-   mov rax, [rbp - 56]
    mov [rsp + 0], rax
-   mov rax, [rbp - 64]
+   mov rax, [rbp - 16]
    mov [rsp + 8], rax
-   mov rax, [rbp - 72]
+   mov rax, [rbp - 24]
    mov [rsp + 16], rax
-   mov rax, [rbp - 80]
+   mov rax, [rbp - 32]
    mov [rsp + 24], rax
-   mov rax, [rbp - 88]
+   mov rax, [rbp - 40]
    mov [rsp + 32], rax
-   mov rax, [rbp - 96]
+   mov rax, [rbp - 48]
    mov [rsp + 40], rax
-   mov rax, [rbp - 104]
+   mov rax, [rbp - 56]
    mov [rsp + 48], rax
-   mov rax, [rbp - 112]
+   mov rax, [rbp - 64]
    mov [rsp + 56], rax
-   pop rdi
+   mov rax, [rbp - 72]
+   mov [rsp + 64], rax
+   mov rax, [rbp - 80]
+   mov [rsp + 72], rax
+   mov rax, [rbp - 88]
+   mov [rsp + 80], rax
+   mov rax, [rbp - 96]
+   mov [rsp + 88], rax
+   mov rax, [rbp - 104]
+   mov [rsp + 96], rax
+   mov rax, [rbp - 112]
+   mov [rsp + 104], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   mov rdx, [rsp + 16]
+   mov rcx, [rsp + 24]
+   mov r8, [rsp + 32]
+   mov r9, [rsp + 40]
+   sub rsp, -48
    call foo
    add rsp, 64
    jmp end1

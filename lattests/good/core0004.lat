@@ -1,0 +1,16 @@
+int main() {
+    int x = 1;
+    if (x > 0) {
+        printString("ok");
+    }
+    if (x > 0) {
+
+    }
+
+    if (x > 0) {
+
+    } else {
+        printString("ok");
+    }
+    return 0;
+}

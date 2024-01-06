@@ -56,18 +56,19 @@ l1:
 l0:
    cmp al, 1
    jne l2
+   sub rsp, 8
    mov al, 1
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
    jmp l3
 l2:
    mov rax, s1
    mov rdi, rax
    call printString
 l3:
+   sub rsp, 8
    mov al, 1
    mov rdx, rax
    push rdx
@@ -80,21 +81,21 @@ l3:
    cmp al, 1
    je l4
    push rax
+   sub rsp, 8
    mov rax, 1
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call dontCallMe
-   add rsp, 0
+   add rsp, 8
    mov rcx, rax
    pop rax
    or rax, rcx
 l4:
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, 4
    mov rdx, rax
    push rdx
@@ -108,21 +109,21 @@ l4:
    cmp al, 0
    je l5
    push rax
+   sub rsp, 8
    mov rax, 2
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call dontCallMe
-   add rsp, 0
+   add rsp, 8
    mov rcx, rax
    pop rax
    and rax, rcx
 l5:
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, 4
    mov rdx, rax
    push rdx
@@ -157,63 +158,66 @@ l7:
    pop rax
    and rax, rcx
 l6:
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
+   sub rsp, 16
    mov al, 0
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov al, 0
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call implies
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
+   add rsp, 16
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
+   sub rsp, 16
    mov al, 0
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov al, 1
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call implies
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
+   add rsp, 16
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
+   sub rsp, 16
    mov al, 1
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov al, 0
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call implies
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
+   add rsp, 16
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
+   sub rsp, 16
    mov al, 1
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov al, 1
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call implies
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
+   add rsp, 16
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
    mov rax, 0
    jmp end1
 end1:

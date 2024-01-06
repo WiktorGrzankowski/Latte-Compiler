@@ -188,92 +188,101 @@ main:
    mov [rax + 16], r12
    pop r12
    mov [rbp - 24], rax
+   sub rsp, 24
    mov rax, [rbp - 16]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 2
-   mov rsi, rax
+   mov [rsp + 8], rax
    mov rax, 4
-   mov rdx, rax
-   pop rdi
+   mov [rsp + 16], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   mov rdx, [rsp + 16]
    call Point2_$_move
-   add rsp, 0
+   add rsp, 24
+   sub rsp, 16
    mov rax, [rbp - 16]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 7
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Point3_$_moveZ
-   add rsp, 0
+   add rsp, 16
    mov rax, [rbp - 16]
    mov [rbp - 8], rax
+   sub rsp, 24
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 3
-   mov rsi, rax
+   mov [rsp + 8], rax
    mov rax, 5
-   mov rdx, rax
-   pop rdi
+   mov [rsp + 16], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   mov rdx, [rsp + 16]
    call Point2_$_move
-   add rsp, 0
+   add rsp, 24
+   sub rsp, 24
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 1
-   mov rsi, rax
+   mov [rsp + 8], rax
    mov rax, 3
-   mov rdx, rax
-   pop rdi
+   mov [rsp + 16], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   mov rdx, [rsp + 16]
    call Point2_$_move
-   add rsp, 0
+   add rsp, 24
+   sub rsp, 16
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 6
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Point3_$_moveZ
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 16
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 2
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Point4_$_moveW
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Point2_$_getX
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Point2_$_getY
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
+   sub rsp, 8
    mov rax, [rbp - 16]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Point3_$_getZ
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
+   sub rsp, 8
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Point4_$_getW
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
    mov rax, 0

@@ -1,0 +1,13 @@
+class X{
+    int z;
+    void f() {
+        self.z = 12;
+    }
+}
+
+int main() {
+    X x = new X;
+    x.f();
+    printInt(x.z);
+    return 0;
+}

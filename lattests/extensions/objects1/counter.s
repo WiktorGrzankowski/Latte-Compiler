@@ -25,30 +25,30 @@ main:
    mov [rax + 0], r12
    pop r12
    mov [rbp - 8], rax
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Counter_$_incr
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Counter_$_incr
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Counter_$_incr
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Counter_$_value
-   add rsp, 0
+   add rsp, 8
    mov [rbp - 16], rax
    mov rax, [rbp - 16]
    mov rdi, rax

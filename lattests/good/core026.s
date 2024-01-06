@@ -42,408 +42,408 @@ main:
    push rbp
    mov rbp, rsp
    sub rsp, 0
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
+   sub rsp, 8
    call d
    add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
-   mov rdi, rax
-   push rdi
-   pop rdi
-   call s
-   add rsp, 0
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
+   call s
+   add rsp, 8
    mov rdi, rax
    call printInt
    mov rax, 0

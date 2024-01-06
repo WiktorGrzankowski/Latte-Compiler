@@ -12,31 +12,82 @@ section .text
    extern allocateClass
    global main
 
-main:
+f:
    push rbp
    mov rbp, rsp
    sub rsp, 16
-   push r12
-   mov rax, 5
-   mov rdi, rax
-   mov r12, rdi
-   mov rsi, 8
-   add rdi, 1
-   call allocateArray
-   mov [rax], r12
-   pop r12
-   mov [rbp - 8], rax
-   mov rax, 2
-   push rax
+   mov [rbp - 8], rdi
+   mov [rbp - 16], rsi
    mov rax, [rbp - 8]
-   mov rdi, rax
+   push rax
+   mov rax, [rbp - 16]
+   mov rdx, rax
    pop rax
-   mov rax, [rdi + 8 + 8 * rax]
+   add rax, rdx
    mov rdi, rax
    call printInt
-   mov rax, 0
-   jmp end1
 end1:
+   mov rsp, rbp
+   pop rbp
+   ret
+f2:
+   push rbp
+   mov rbp, rsp
+   sub rsp, 16
+   mov [rbp - 8], rdi
+   mov [rbp - 16], rsi
+   mov rax, [rbp - 8]
+   push rax
+   mov rax, [rbp - 16]
+   mov rdx, rax
+   pop rax
+   add rax, rdx
+   jmp end2
+end2:
+   mov rsp, rbp
+   pop rbp
+   ret
+main:
+   push rbp
+   mov rbp, rsp
+   sub rsp, 0
+   sub rsp, 16
+   sub rsp, 16
+   mov rax, 10
+   mov [rsp + 0], rax
+   mov rax, 10
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   call f2
+   add rsp, 16
+   mov [rsp + 0], rax
+   mov rax, 1
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   call f
+   add rsp, 16
+   sub rsp, 16
+   mov rax, 1
+   mov [rsp + 0], rax
+   sub rsp, 16
+   mov rax, 10
+   mov [rsp + 0], rax
+   mov rax, 10
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   call f2
+   add rsp, 16
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
+   call f
+   add rsp, 16
+   mov rax, 0
+   jmp end3
+end3:
    mov rsp, rbp
    pop rbp
    ret

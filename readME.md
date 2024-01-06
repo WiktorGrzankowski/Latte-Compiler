@@ -42,6 +42,8 @@ Działa bez rzutowania, można go porównać z każdą klasą.
 Jedynie shift/reduce, wynikające z niejednoznaczności `if else` oraz podobieństwa 
 inicjalizacji tablicy `new Expr [Expr]` do odwołania do elementu tablicy `Expr [Expr]`.
 
+# Zaimplementowane rozszerzenia
+Zaimplementowane są tablice, oraz klasy z dziedziczeniem (a więc też i struktury) o łącznej wartości 7 punktów.
 
 # Struktura katalogów
 readME: opis działania

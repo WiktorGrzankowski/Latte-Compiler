@@ -1,0 +1,12 @@
+class X {
+    X x;
+}
+
+int main() {
+    X x = new X;
+    x.x = new X;
+    if (x.x != null) {
+        printString("ok");
+    }
+    return 0;
+}

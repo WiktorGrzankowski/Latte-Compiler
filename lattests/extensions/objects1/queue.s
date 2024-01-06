@@ -99,20 +99,21 @@ IntQueue_$_insert:
    mov [rax + 0], r12
    pop r12
    mov [rbp - 24], rax
+   sub rsp, 16
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, [rbp - 16]
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Node_$_setElem
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call IntQueue_$_isEmpty
-   add rsp, 0
+   add rsp, 8
    cmp al, 1
    jne l0
    mov rax, [rbp - 8]
@@ -122,15 +123,16 @@ IntQueue_$_insert:
    mov [rdi + 0], rax
    jmp l1
 l0:
+   sub rsp, 16
    mov rax, [rbp - 8]
    mov rax, [rax + 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, [rbp - 24]
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Node_$_setNext
-   add rsp, 0
+   add rsp, 16
 l1:
    mov rax, [rbp - 8]
    mov rax, [rax + 8]
@@ -146,13 +148,13 @@ IntQueue_$_first:
    mov rbp, rsp
    sub rsp, 16
    mov [rbp - 8], rdi
+   sub rsp, 8
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Node_$_getElem
-   add rsp, 0
+   add rsp, 8
    jmp end7
 end7:
    mov rsp, rbp
@@ -165,13 +167,13 @@ IntQueue_$_rmFirst:
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
+   sub rsp, 8
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Node_$_getNext
-   add rsp, 0
+   add rsp, 8
    mov rdi, [rbp - 8]
    mov [rdi + 0], rax
 end8:
@@ -200,12 +202,12 @@ l2:
    setne al
    cmp al, 1
    jne l3
+   sub rsp, 8
    mov rax, [rbp - 16]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Node_$_getNext
-   add rsp, 0
+   add rsp, 8
    mov [rbp - 16], rax
    mov rax, [rbp - 24]
    inc rax
@@ -246,55 +248,58 @@ main:
    mov rdi, 16
    call allocateClass
    mov [rbp - 8], rax
+   sub rsp, 16
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
+   sub rsp, 8
    mov rax, 3
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call f
-   add rsp, 0
-   mov rsi, rax
-   pop rdi
+   add rsp, 8
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call IntQueue_$_insert
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 16
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 5
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call IntQueue_$_insert
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 16
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 7
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call IntQueue_$_insert
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call IntQueue_$_first
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call IntQueue_$_rmFirst
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call IntQueue_$_size
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
    mov rax, 0

@@ -96,13 +96,24 @@ r14R :: String
 r14R = "r14"
 
 regValAtOffset :: String -> String -> String
-regValAtOffset reg offset = "[" ++ reg ++ " + " ++ offset ++ "]"
+regValAtOffset reg offset 
+    | offset == "1" = "[" ++ reg ++ "]"
+    | otherwise = "[" ++ reg ++ " + " ++ offset ++ "]"
 
 cqoCall :: Builder
 cqoCall = fromString "   cqo\n"
 
+emptyCode :: Builder
+emptyCode = fromString ""
+
 jmpTo :: String -> Builder
 jmpTo l = fromString $ "   jmp " ++ l ++ "\n"
+
+jneTo :: String -> Builder
+jneTo l = fromString $ "   jne " ++ l ++ "\n"
+
+jeTo :: String -> Builder
+jeTo l = fromString $ "   je " ++ l ++ "\n"
 
 typeSize :: Type -> Int
 typeSize t = 8
@@ -124,6 +135,15 @@ xorCall reg1 reg2 = fromString $ "   xor " ++ reg1 ++ ", " ++ reg2 ++ "\n"
 
 addCall :: String -> String -> Builder
 addCall reg1 reg2 = fromString $ "   add " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+subCall :: String -> String -> Builder
+subCall reg1 reg2 = fromString $ "   sub " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+mulCall :: String -> String -> Builder
+mulCall reg1 reg2 = fromString $ "   imul " ++ reg1 ++ ", " ++ reg2 ++ "\n"
+
+labelToCode :: String -> Builder
+labelToCode l = fromString $ l ++ ":\n"
 
 negReg :: String -> Builder
 negReg reg = fromString $ "   neg " ++ reg ++ "\n"

@@ -79,23 +79,25 @@ Stack_$_push:
    mov [rax + 0], r12
    pop r12
    mov [rbp - 24], rax
+   sub rsp, 16
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, [rbp - 16]
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Node_$_setElem
-   add rsp, 0
+   add rsp, 16
+   sub rsp, 16
    mov rax, [rbp - 24]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Node_$_setNext
-   add rsp, 0
+   add rsp, 16
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
    mov rax, [rbp - 24]
@@ -130,13 +132,13 @@ Stack_$_top:
    mov rbp, rsp
    sub rsp, 16
    mov [rbp - 8], rdi
+   sub rsp, 8
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Node_$_getElem
-   add rsp, 0
+   add rsp, 8
    jmp end7
 end7:
    mov rsp, rbp
@@ -149,13 +151,13 @@ Stack_$_pop:
    mov [rbp - 8], rdi
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
+   sub rsp, 8
    mov rax, [rbp - 8]
    mov rax, [rax + 0]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Node_$_getNext
-   add rsp, 0
+   add rsp, 8
    mov rdi, [rbp - 8]
    mov [rdi + 0], rax
 end8:
@@ -183,43 +185,44 @@ l0:
    setl al
    cmp al, 1
    jne l1
+   sub rsp, 16
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, [rbp - 16]
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call Stack_$_push
-   add rsp, 0
+   add rsp, 16
    mov rax, [rbp - 16]
    inc rax
    mov [rbp - 16], rax
    jmp l0
 l1:
 l2:
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Stack_$_isEmpty
-   add rsp, 0
+   add rsp, 8
    xor al, 1
    cmp al, 1
    jne l3
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Stack_$_top
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call Stack_$_pop
-   add rsp, 0
+   add rsp, 8
    jmp l2
 l3:
    mov rax, 0

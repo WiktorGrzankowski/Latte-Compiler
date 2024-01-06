@@ -71,6 +71,7 @@ main:
    mov rax, rdx
    mov rdi, rax
    call printInt
+   sub rsp, 8
    mov rax, [rbp - 8]
    push rax
    mov rax, [rbp - 16]
@@ -90,11 +91,11 @@ main:
    xor rax, rax
    cmp rdx, rcx
    setg al
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, [rbp - 8]
    push rax
    mov rax, [rbp - 16]
@@ -116,11 +117,10 @@ main:
    xor rax, rax
    cmp rdx, rcx
    setle al
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call printBool
-   add rsp, 0
+   add rsp, 8
    mov rax, s1
    push rax
    mov rax, s2

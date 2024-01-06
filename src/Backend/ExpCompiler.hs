@@ -13,34 +13,90 @@ isVarFunctionArg v ((x, t):xs) n = case v == x of
     True -> Just (n, t)
     False -> isVarFunctionArg v xs (n+1)
 
-prepareArguments :: [Expr] -> [(String, Type)] -> Integer -> CM (Builder, Int)
-prepareArguments [] _ argNr 
-    | argNr == 1 = return (fromString "", 0)
-    | otherwise = return (popReg rdiR, 0)
+prepareArguments :: [Expr] -> [(String, Type)] -> Integer -> CM (Builder, Integer)
+-- najpierw zapisac wszystkie rzeczy na stos
+-- potem pierwsze 6 argumentow przepisac na rejestry
+-- nastepnie, jesli sa jeszcze argumenty do wrzucenia na stos, dodać 40 do rsp
+-- prepareArguments [] _ argNr = return (emptyCode, 0)
+prepareArguments [] _ argNr
+    | argNr == 1 = return (emptyCode, 0)
+    | otherwise = do
+        code <- getArgsBackFromStack 1 (argNr - 1)
+        return (code, 0)
+        -- return (code, toInteger ((argNr - 7) * 8))
+        -- there are some arguments to be taken from the stack
+    where
+        getArgsBackFromStack :: Integer -> Integer -> CM Builder
+        getArgsBackFromStack argNr lastArg
+            | argNr > lastArg = return emptyCode
+            -- move to rdi
+            | argNr <= 6 = do
+                let thisArgReg = argRegister argNr 8
+                let move = fromString $ "   mov " ++ thisArgReg ++ ", [rsp + " ++ (show (8 * (argNr - 1))) ++ "]\n"
+                restCode <- getArgsBackFromStack (argNr + 1) lastArg
+                return $ formatStrings [move, restCode] -- todo the second part is stupid
+            | argNr == 7 = do
+                -- simply add 40 to the stack
+                let fixStackOffset = allocateStack $ toInteger (-48)
+                return fixStackOffset
+ 
 
 prepareArguments (e:rest) ((_, t):otherArgs) argNr
     | argNr == 1 = do
+        -- allocate the space already
+        let makeSpace = allocateStack $ toInteger ((1 + (length otherArgs)) * 8)
+
         (eCode, _) <- compExp e 
-        let move = movToRegFromReg (argRegister argNr (typeSize t)) (raxPartBytes (typeSize t))
+        let moveToStack = fromString $ "   mov [rsp + " ++ (show ((argNr - 1) * 8)) ++ "], rax\n"
         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
-        return (formatStrings [eCode, move, pushReg rdiR, restCode], restSize)
+        let allArgsCnt = toInteger $ (length otherArgs) + 1
+        let laterToAdd = if allArgsCnt > 6 then (8 * (allArgsCnt - 6)) else (8 * allArgsCnt)
+        return (formatStrings [makeSpace, eCode, moveToStack, restCode], laterToAdd)
     | argNr <= 6 = do
         (eCode, _) <- compExp e 
-        let move = movToRegFromReg (argRegister argNr (typeSize t)) (raxPartBytes (typeSize t))
+        let moveToStack = fromString $ "   mov [rsp + " ++ (show ((argNr - 1) * 8)) ++ "], rax\n"
         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
-        return (formatStrings [eCode, move, restCode], restSize)
-    | argNr == 7 = do
-        let argsLeft = 1 + (length rest)
-        (eCode, _) <- compExp e
-        let move = fromString $ "   mov [rsp + " ++ (show 0) ++ "], " ++ (raxPartBytes (typeSize t)) ++ "\n"        
-        (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
-        let makeSpace = allocateStack $ toInteger (restSize + (typeSize t))
-        return (formatStrings [makeSpace, eCode, move, restCode], restSize + (typeSize t))
+        return (formatStrings [eCode, moveToStack, restCode], restSize)
+    -- | argNr == 7 = do
+    --     let argsLeft = 1 + (length rest)
+    --     (eCode, _) <- compExp e
+    --     let move = fromString $ "   mov [rsp + " ++ (show ((argNr - 1) * 8)) ++ "], rax\n"
+    --     (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
+
+    --     return (formatStrings [eCode, move, restCode], restSize + (typeSize t))
     | otherwise = do
         (eCode, _) <- compExp e 
-        let move = fromString $ "   mov [rsp + " ++ (show ((argNr - 7) * (toInteger (typeSize t)))) ++ "], " ++ (raxPartBytes (typeSize t)) ++ "\n"
+        let move = fromString $ "   mov [rsp + " ++ (show ((argNr - 1) * 8)) ++ "], rax\n" 
         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
-        return (formatStrings [eCode, move, restCode], restSize + (typeSize t))
+        return (formatStrings [eCode, move, restCode], restSize + 8)
+
+
+
+
+
+-- prepareArguments (e:rest) ((_, t):otherArgs) argNr
+--     | argNr == 1 = do
+--         (eCode, _) <- compExp e 
+--         let move = movToRegFromReg (argRegister argNr (typeSize t)) (raxPartBytes (typeSize t))
+--         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
+--         return (formatStrings [restCode, eCode, move], restSize)
+--     | argNr <= 6 = do
+--         (eCode, _) <- compExp e 
+--         let move = movToRegFromReg (argRegister argNr (typeSize t)) (raxPartBytes (typeSize t))
+--         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
+--         return (formatStrings [eCode, move, restCode], restSize)
+--     | argNr == 7 = do
+--         let argsLeft = 1 + (length rest)
+--         (eCode, _) <- compExp e
+--         let move = movToRegFromReg (regValAtOffset rspR (show 0)) (raxPartBytes (typeSize t))  
+--         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
+--         let makeSpace = allocateStack $ toInteger (restSize + (typeSize t))
+--         return (formatStrings [makeSpace, eCode, move, restCode], restSize + (typeSize t))
+--     | otherwise = do
+--         (eCode, _) <- compExp e 
+--         let move = movToRegFromReg (regValAtOffset rspR (show ((argNr - 7) * (toInteger (typeSize t))))) (raxPartBytes (typeSize t))  
+--         (restCode, restSize) <- prepareArguments rest otherArgs (argNr + 1)
+--         return (formatStrings [eCode, move, restCode], restSize + (typeSize t))
 
 
 
@@ -82,14 +138,14 @@ compExp (EVar _ (Ident x)) = do
         Nothing -> do
             case isVarFunctionArg x (funArgs memory) 1 of
                 Just (n, t) -> do
-                    let code = fromString $ "   mov " ++ raxR ++ ", [rbp + " ++ (show ((n-7)*(typeSize t) + 16)) ++ "]\n"
+                    let code = movToRegFromReg raxR (regValAtOffset rbpR (show ((n-7)*(typeSize t) + 16)))
                     return (code, tTypeFromType t)
                 Nothing -> do
                     memory <- get
                     let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
                     let getInstanceArg = movToRegSelfArg raxR
-                    let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
+                    let getClassVar = movToRegFromReg raxR (regValAtOffset raxR (show varOffset))
                     return (formatStrings [getInstanceArg, getClassVar], varType)
 
 compExp (SReadInt _) = return (callFun "readInt", TInt)
@@ -157,7 +213,7 @@ compExp (EClass _ (Ident className)) = do
             let movR12ToPointer = movToRegFromReg (regValAtOffset raxR (show offset)) r12R
             let popR12 = popReg r12R
             return $ formatStrings [pushR12, movValToR12, movR12ToPointer, popR12]
-        setFieldToDefaultValues _ = return $ fromString ""
+        setFieldToDefaultValues _ = return emptyCode
 
 compExp (EArrClass pos (Ident className) e) = compExp (EArr pos (ClassT pos (Ident className)) e)
 
@@ -180,16 +236,16 @@ compExp (EArr pos t e) = do
             let popRax = popReg raxR
             let saveSizeToR12 = movToRegFromReg r12R rdiR
             let movSizeBackToRcx = movToRegFromReg rcxR r12R
-            -- set all values in "rax + 8 * (up to size)" to be s0
             let loopLabel = "init_loop" ++ show (labelNr)
             let loopEndLabel = "end_loop" ++ show (labelNr)
             let checkIfEmptyArr = fromString $ "   test rcx, rcx\n   jz " ++ loopEndLabel ++ "\n"
-            let loopLabelStart = fromString $ loopLabel ++ ":\n"
-            let loopEndLabelCode = fromString $ loopEndLabel ++ ":\n"
+            let loopLabelStart = labelToCode loopLabel
+            let loopEndLabelCode = labelToCode loopEndLabel
             let insideLoop = formatStrings [fromString "   mov qword [rax + 8], s0\n", addCall raxR (show 8), fromString $ "   loop " ++ loopLabel ++ "\n"]
             modify (\st -> st {labelId = labelNr + 1})
             let initAllocation = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen]
             let initLoop = formatStrings [pushRax, movSizeBackToRcx, checkIfEmptyArr,loopLabelStart, insideLoop, loopEndLabelCode, popRax, popR12]
+            
             return (formatStrings [initAllocation, initLoop], (TArr arrayType))
         _ -> do
             let baseCode = formatStrings [pushR12, code, movSizeToRdi, saveSizeToR12, movTypeSizeToRsi, accountForLengthAttr, allocateSpace, setFirstPlaceToLen, popR12]
@@ -200,7 +256,7 @@ compExp (EAttr pos e (Ident field)) = do
     case field of
         "length" -> do
             case eType of
-                TArr _ -> return (formatStrings [codeExp, fromString "   mov rax, [rax]\n"], TInt)
+                TArr _ -> return (formatStrings [codeExp, movToRegFromReg raxR (regValAtOffset raxR (show 0))], TInt)
         _ -> do
             case eType of
                 (TClass className) -> do
@@ -246,7 +302,7 @@ compExp (EAdd _ e1 (Minus _) e2) = do
     (code2, _) <- compExp e2
     let movSecondResult = movToRegFromReg rdxR raxR
     let retrieveRdi = popReg raxR
-    return (formatStrings [code, saveRdi, code2, movSecondResult, retrieveRdi, fromString "   sub rax, rdx\n"], TInt)
+    return (formatStrings [code, saveRdi, code2, movSecondResult, retrieveRdi, subCall raxR rdxR], TInt)
 
 compExp (EMul _ e1 (Times _) e2) = do
     (code, _) <- compExp e1 
@@ -254,7 +310,7 @@ compExp (EMul _ e1 (Times _) e2) = do
     (code2, _) <- compExp e2 
     let movSecondResult = movToRegFromReg rdxR raxR
     let retrieveRdi = popReg raxR
-    return (formatStrings [code, saveRdi, code2, movSecondResult, retrieveRdi, fromString "   imul rax, rdx\n"], TInt)
+    return (formatStrings [code, saveRdi, code2, movSecondResult, retrieveRdi, mulCall raxR rdxR], TInt)
 
 compExp (EMul _ e1 (Div _) e2) = do
     (code, _) <- compExp e1 
@@ -285,8 +341,8 @@ compExp (EOr _ e1 e2) = do
     labelName <- gets labelId
     let finishLabel = "l" ++ (show labelName)
     modify (\st -> st {labelId = labelName + 1})
-    let finishIfFirstTrue = fromString $ "   je " ++ finishLabel ++ "\n"
-    let finishLabelCode = fromString $ finishLabel ++ ":\n"
+    let finishIfFirstTrue = jeTo finishLabel
+    let finishLabelCode = labelToCode finishLabel
     let saveRax = pushReg raxR
     (code2, _) <- compExp e2
     let movSecondResult = movToRegFromReg rcxR raxR
@@ -300,8 +356,8 @@ compExp (EAnd _ e1 e2) = do
     labelName <- gets labelId
     let finishLabel = "l" ++ (show labelName)
     modify (\st -> st {labelId = labelName + 1})
-    let finishIfFirstTrue = fromString $ "   je " ++ finishLabel ++ "\n"
-    let finishLabelCode = fromString $ finishLabel ++ ":\n"
+    let finishIfFirstTrue = jeTo finishLabel
+    let finishLabelCode = labelToCode finishLabel
     let saveRax = pushReg raxR
     (code2, _) <- compExp e2
     let movSecondResult = movToRegFromReg rcxR raxR

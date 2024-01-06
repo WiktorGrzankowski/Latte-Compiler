@@ -33,7 +33,7 @@ l0:
    mov rdx, rax
    push rdx
    mov rax, [rbp - 8]
-   mov rax, [rax]
+   mov rax, [rax + 0]
    mov rcx, rax
    pop rdx
    xor rax, rax
@@ -57,7 +57,7 @@ l0:
    jmp l0
 l1:
    mov rax, [rbp - 8]
-   mov r12, [rax]
+   add r12, [rax + 0]
    add rax, 8
    mov r13, rax
    sub rsp, 8

@@ -16,12 +16,12 @@ main:
    push rbp
    mov rbp, rsp
    sub rsp, 0
+   sub rsp, 8
    mov rax, 17
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call ev
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
    mov rax, 0
@@ -46,17 +46,17 @@ ev:
    setg al
    cmp al, 1
    jne l0
+   sub rsp, 8
    mov rax, [rbp - 8]
    push rax
    mov rax, 2
    mov rdx, rax
    pop rax
    sub rax, rdx
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call ev
-   add rsp, 0
+   add rsp, 8
    jmp end2
    jmp l1
 l0:

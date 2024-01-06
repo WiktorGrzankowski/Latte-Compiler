@@ -18,14 +18,15 @@ main:
    push rbp
    mov rbp, rsp
    sub rsp, 0
+   sub rsp, 16
    mov rax, 1
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, 2
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call f
-   add rsp, 0
+   add rsp, 16
    mov rax, 0
    jmp end1
 end1:

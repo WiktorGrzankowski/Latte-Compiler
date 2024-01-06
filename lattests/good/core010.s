@@ -16,12 +16,12 @@ main:
    push rbp
    mov rbp, rsp
    sub rsp, 0
+   sub rsp, 8
    mov rax, 5
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call fac
-   add rsp, 0
+   add rsp, 8
    mov rdi, rax
    call printInt
    mov rax, 0

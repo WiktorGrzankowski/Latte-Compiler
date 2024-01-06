@@ -19,7 +19,7 @@ doubleArray:
    mov [rbp - 8], rdi
    push r12
    mov rax, [rbp - 8]
-   mov rax, [rax]
+   mov rax, [rax + 0]
    mov rdi, rax
    mov r12, rdi
    mov rsi, 8
@@ -31,7 +31,7 @@ doubleArray:
    mov rax, 0
    mov [rbp - 24], rax
    mov rax, [rbp - 8]
-   mov r12, [rax]
+   add r12, [rax + 0]
    add rax, 8
    mov r13, rax
    sub rsp, 8
@@ -88,7 +88,7 @@ l1:
    mov rdx, rax
    push rdx
    mov rax, [rbp - 8]
-   mov rax, [rax]
+   mov rax, [rax + 0]
    push rax
    mov rax, 1
    mov rdx, rax
@@ -129,7 +129,7 @@ l2:
    mov rax, [rbp - 8]
    push rax
    mov rax, [rbp - 8]
-   mov rax, [rax]
+   mov rax, [rax + 0]
    push rax
    mov rax, 1
    mov rdx, rax
@@ -162,7 +162,7 @@ l3:
    mov rdx, rax
    push rdx
    mov rax, [rbp - 8]
-   mov rax, [rax]
+   mov rax, [rax + 0]
    mov rcx, rax
    pop rdx
    xor rax, rax
@@ -224,7 +224,7 @@ l5:
    mov rdx, rax
    push rdx
    mov rax, [rbp - 8]
-   mov rax, [rax]
+   mov rax, [rax + 0]
    mov rcx, rax
    pop rdx
    xor rax, rax
@@ -247,21 +247,21 @@ l5:
    mov [rbp - 16], rax
    jmp l5
 l6:
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call shiftLeft
-   add rsp, 0
+   add rsp, 8
+   sub rsp, 8
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
-   pop rdi
+   mov [rsp + 0], rax
+   mov rdi, [rsp + 0]
    call doubleArray
-   add rsp, 0
+   add rsp, 8
    mov [rbp - 24], rax
    mov rax, [rbp - 8]
-   mov r12, [rax]
+   add r12, [rax + 0]
    add rax, 8
    mov r13, rax
    sub rsp, 8
@@ -279,7 +279,7 @@ forEach8:
 forEach8end:
    add rsp, 8
    mov rax, [rbp - 24]
-   mov r12, [rax]
+   add r12, [rax + 0]
    add rax, 8
    mov r13, rax
    sub rsp, 8
@@ -296,14 +296,15 @@ forEach9:
    jnz forEach9
 forEach9end:
    add rsp, 8
+   sub rsp, 16
    mov rax, [rbp - 8]
-   mov rdi, rax
-   push rdi
+   mov [rsp + 0], rax
    mov rax, [rbp - 24]
-   mov rsi, rax
-   pop rdi
+   mov [rsp + 8], rax
+   mov rdi, [rsp + 0]
+   mov rsi, [rsp + 8]
    call scalProd
-   add rsp, 0
+   add rsp, 16
    mov rdi, rax
    call printInt
    mov rax, 0

@@ -57,7 +57,7 @@ textSectionHeader = formatStrings [
     ]
 
 emptyStack :: Integer -> Builder
-emptyStack size = fromString $ "   add rsp, " ++ (show size) ++ "\n"
+emptyStack size = addCall rspR (show size)
 
 getArgsNames :: [Arg] -> [(String, Type)]
 getArgsNames [] = []
@@ -74,7 +74,7 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
     return code
     where
         createMethods :: Var -> [ClassAttr] -> CM Builder
-        createMethods _ [] = return $ fromString ""
+        createMethods _ [] = return emptyCode
         createMethods className ((ClassMethod pos fType (Ident f) args block):rest) = do
             let methodIdent = getMethodIdent className f
             -- args have 1 more thing - the class instance
@@ -83,32 +83,15 @@ compTopDef (ClassDef pos (Ident x) attrs) = do
             return $ formatStrings [code, restCode]
         createMethods className (_:rest) = createMethods className rest
 
-compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = do
-    memory <- get
-    let thisClassFields = Map.findWithDefault Map.empty x (classEnv memory)
-    let thisClassMethods = Map.findWithDefault Map.empty x (classFunEnv memory)
-    modify (\st -> st { currClass = x})
-    code <- createMethods x attrs
-    modify (\st -> st {currClass = noCurrClass})
-    return code
-    where
-        createMethods :: Var -> [ClassAttr] -> CM Builder
-        createMethods _ [] = return $ fromString ""
-        createMethods className ((ClassMethod pos fType (Ident f) args block):rest) = do
-            let methodIdent = getMethodIdent className f
-            -- args have 1 more thing - the class itself
-            code <- compTopDef (FnDef pos fType (Ident methodIdent) ((Ar pos (ClassT pos (Ident className)) (Ident "self")):args) block)
-            restCode <- createMethods className rest
-            return $ formatStrings [code, restCode]
-        createMethods className (_:rest) = createMethods className rest
+compTopDef (ClassDefE pos (Ident x) (Ident parent) attrs) = compTopDef (ClassDef pos (Ident x) attrs)
             
 compTopDef (FnDef pos fType (Ident f) args block) = do    
     labelName <- gets funId
     modify (\st -> st {funId = labelName + 1})
     let endLabelCode = fromString $ "end" ++ (show (labelName + 1)) ++ ":\n"
     funVarsSize <- countVarsInBlock block
-    let funLabel = fromString $ f ++ ":\n"
-    let prologue = fromString "   push rbp\n   mov rbp, rsp\n"
+    let funLabel = labelToCode f
+    let prologue = formatStrings [pushReg rbpR, movToRegFromReg rbpR rspR]
     let epilogue = popReg rbpR
     funs <- gets funEnv
     let argsSaved = Map.findWithDefault [] f funs
@@ -169,7 +152,7 @@ compStmt (Ret _ e) = do
     let jmpToEnd = jmpTo ("end" ++ (show myFunId))
     return $ formatStrings [code, jmpToEnd]
 
-compStmt (Empty _) = return $ fromString ""
+compStmt (Empty _) = return emptyCode
 compStmt (BStmt _ b) = compBlock b   
 
 compStmt (VRet _) = do
@@ -204,13 +187,11 @@ compStmt (Ass _ (EVar _ (Ident x)) e) = do
             memory <- get
             let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
             let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
-            let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
-            let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
-            let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
-            -- todo - here get from [rdi + (attribut offset)]
+            let getInstanceArg = movToRegSelfArg raxR
+            let getClassVar = movToRegFromReg raxR (regValAtOffset raxR (show varOffset))
+            let getEffectiveAddressBack = movToRegSelfArg rdiR
             let (xOffset, xT) = Map.findWithDefault (0, TNull) x thisClassFields
-            let changeActualValue = fromString $ "   mov [rdi + " ++ (show xOffset) ++ "], rax\n"
-            -- todo - doesnot wokr
+            let changeActualValue = movToRegFromReg (regValAtOffset rdiR (show xOffset)) raxR
             return $ formatStrings [getInstanceArg, getClassVar, code, getEffectiveAddressBack, changeActualValue]
 
 compStmt (Ass _ (EVarArr _ eIdent eInd) eVal) = do
@@ -235,7 +216,7 @@ compStmt (Ass pos (EAttr pos2 (EVarArr pos3 eIdent eInd) (Ident field)) eVal) = 
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
     let (offset, _) = Map.findWithDefault (0, TNull) field thisClassFields
-    let movValToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], rdi\n"
+    let movValToPointer = movToRegFromReg (regValAtOffset raxR (show offset)) rdiR
     return $ formatStrings [codeGetArr, saveRax, codeVal, movValToRdi, retrieveRax, movValToPointer]
 
 compStmt (Ass pos (EAttr pos2 e (Ident field)) eVal) = do
@@ -247,7 +228,7 @@ compStmt (Ass pos (EAttr pos2 e (Ident field)) eVal) = do
     memory <- get
     let thisClassFields = Map.findWithDefault Map.empty className (classEnv memory)
     let (offset, _) = Map.findWithDefault (0, TNull) field thisClassFields
-    let movValToPointer = fromString $ "   mov [rax + " ++ (show offset) ++ "], rdi\n"
+    let movValToPointer = movToRegFromReg (regValAtOffset raxR (show offset)) rdiR
     return $ formatStrings [codeClassEval, saveRax, codeVal, movValToRdi, retrieveRax, movValToPointer]
 
 compStmt (Incr _ (EVar _ (Ident x))) = do
@@ -294,10 +275,10 @@ compStmt (Decr _ (EVar _ (Ident x))) = do
                     memory <- get
                     let thisClassFields = Map.findWithDefault Map.empty (currClass memory) (classEnv memory)
                     let (varOffset, varType) = Map.findWithDefault (0, TNull) x thisClassFields
-                    let getInstanceArg = fromString $ "   mov rax, [rbp - 8]\n"
-                    let getClassVar = fromString $ "   mov rax, [rax + " ++ (show varOffset) ++ "]\n" 
-                    let getEffectiveAddressBack = fromString "   mov rdi, [rbp - 8]\n"
-                    let changeActualValue = fromString $ "   mov [rdi], rax\n"
+                    let getInstanceArg = movToRegSelfArg raxR
+                    let getClassVar = movToRegFromReg raxR (regValAtOffset raxR (show varOffset))
+                    let getEffectiveAddressBack =  movToRegSelfArg rdiR
+                    let changeActualValue = movToRegFromReg (regValAtOffset rdiR (show 0)) raxR
                     -- todo - doesnot wokr
                     return $ formatStrings [getInstanceArg, getClassVar, decr, getEffectiveAddressBack, changeActualValue]
 
@@ -306,10 +287,10 @@ compStmt (Cond _ cond stmt) = do
     labelName <- gets labelId
     let afterLabel = "l" ++ (show labelName)
     modify (\st -> st {labelId = labelName + 1})
-    let checkAl = fromString "   cmp al, 1\n"
-    let jumpIfNotEq = fromString $ "   jne " ++ afterLabel ++ "\n"
+    let checkAl = compareCall alR (show 1)
+    let jumpIfNotEq = jneTo afterLabel
     stmtCode <- compStmt stmt
-    let labelCode = fromString $ afterLabel ++ ":\n"
+    let labelCode = labelToCode afterLabel
     return $ formatStrings [condCode, checkAl, jumpIfNotEq, stmtCode, labelCode]
 
 compStmt (CondElse _ cond stmt1 stmt2) = do
@@ -321,13 +302,13 @@ compStmt (CondElse _ cond stmt1 stmt2) = do
     labelName <- gets labelId
     let afterLabel = "l" ++ (show labelName)
     modify (\st -> st {labelId = labelName + 1})
-    let checkAl = fromString "   cmp al, 1\n"
-    let jumpToElseIfNotEq = fromString $ "   jne " ++ elseLabel ++ "\n"
-    let jumpToAfter = fromString $ "   jmp " ++ afterLabel ++ "\n"
+    let checkAl = compareCall alR (show 1)
+    let jumpToElseIfNotEq = jneTo elseLabel
+    let jumpToAfter = jmpTo afterLabel
     stmt1Code <- compStmt stmt1
     stmt2Code <- compStmt stmt2
-    let afterLabelCode = fromString $ afterLabel ++ ":\n"
-    let elseLabelCode = fromString $ elseLabel ++ ":\n"
+    let afterLabelCode = labelToCode afterLabel
+    let elseLabelCode = labelToCode elseLabel
     return $ formatStrings [condCode, checkAl, jumpToElseIfNotEq, stmt1Code, jumpToAfter, elseLabelCode, stmt2Code, afterLabelCode]
 
 compStmt (While _ cond stmt) = do
@@ -338,34 +319,34 @@ compStmt (While _ cond stmt) = do
     labelName <- gets labelId
     let afterLabel = "l" ++ (show labelName)
     modify (\st -> st {labelId = labelName + 1})
-    let checkAl = fromString "   cmp al, 1\n"
-    let jumpIfNotEq = fromString $ "   jne " ++ afterLabel ++ "\n"
+    let checkAl = compareCall alR (show 1)
+    let jumpIfNotEq = jneTo afterLabel
     stmtCode <- compStmt stmt
-    let labelCode = fromString $ afterLabel ++ ":\n"
-    let labelCondCode = fromString $ condLabel ++ ":\n"
-    let jmpLabelCond = fromString $ "   jmp " ++ condLabel ++ "\n"
+    let labelCode =  labelToCode afterLabel
+    let labelCondCode = labelToCode condLabel
+    let jmpLabelCond = jmpTo condLabel
     return $ formatStrings [labelCondCode, condCode, checkAl, jumpIfNotEq, stmtCode, jmpLabelCond, labelCode]
 
 compStmt (ForEach pos t (Ident x) e stmt) = do
     (eCode, _) <- compExp e 
     memory <- get
     redefineX <- compItemForEachCase t (NoInit pos (Ident x))
-    let movLenToR12 = fromString "   mov r12, [rax]\n"
-    let movRaxToFirstElem = fromString "   add rax, 8\n"
-    let movArrToR11 = movToRegFromReg "r13" raxR
+    let movLenToR12 = addCall r12R (regValAtOffset raxR (show 0))
+    let movRaxToFirstElem = addCall raxR (show 8)
+    let movArrToR11 = movToRegFromReg r13R raxR
 
     let labelNr = labelId memory
     modify (\st -> st {labelId = labelNr + 1})
     let labelName = "forEach" ++ (show (labelNr + 1))
-    let labelCode = fromString $ labelName ++ ":\n"
+    let labelCode = labelToCode labelName
     let labelEndName = labelName ++ "end"
-    let labelEndCode = fromString $ labelEndName ++ ":\n"
+    let labelEndCode = labelToCode labelEndName
     let checkIfEmptyArr = fromString "   test r12, r12\n"
     let gotoEndIfEmptyArr = fromString $ "   jz " ++ labelEndName ++ "\n"
     let loopAgain = fromString $ "   add r13, 8\n   dec r12\n   jnz " ++ labelName ++ "\n"
 
-    let spaceForIterator = fromString "   sub rsp, 8\n"
-    let deletSpaceForIterator = fromString "   add rsp, 8\n"
+    let spaceForIterator = subCall rspR (show 8)
+    let deletSpaceForIterator = addCall rspR (show 8)
 
     stmtCode <- compStmt stmt
 
@@ -478,5 +459,4 @@ compile :: Program -> IO Builder
 compile (Prog _ topDefs) = do
     (program, _) <- runStateT (runExceptT (catchError (compileAll topDefs) handleErr)) emptyState
     case program of
-        Left err -> return $ fromString "error"
         Right code -> return code
